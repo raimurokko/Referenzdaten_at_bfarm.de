@@ -21,55 +21,55 @@ var BfarmDB = (function () {
 
                 onProgress('Lade Datenbank ...');
 
-                function loadDB(url, compressed) {
+                function fetchWithProgress(url, onProg) {
                     return fetch(url).then(function (resp) {
                         if (!resp.ok) throw new Error('HTTP ' + resp.status);
                         var total = parseInt(resp.headers.get('content-length') || '0');
                         var reader = resp.body.getReader();
                         var chunks = [], loaded = 0;
-
-                        function readChunk() {
-                            return reader.read().then(function (result) {
-                                if (result.done) return;
-                                chunks.push(result.value);
-                                loaded += result.value.length;
-                                if (total > 0) {
-                                    onProgress((loaded / 1048576).toFixed(1) + ' MB (' + ((loaded / total) * 100).toFixed(0) + '%)');
-                                } else {
-                                    onProgress((loaded / 1048576).toFixed(1) + ' MB geladen ...');
-                                }
-                                return readChunk();
+                        function read() {
+                            return reader.read().then(function (r) {
+                                if (r.done) return;
+                                chunks.push(r.value); loaded += r.value.length;
+                                onProg(loaded, total);
+                                return read();
                             });
                         }
-
-                        return readChunk().then(function () {
-                            var buf = new Uint8Array(loaded);
-                            var off = 0;
-                            for (var i = 0; i < chunks.length; i++) {
-                                buf.set(chunks[i], off);
-                                off += chunks[i].length;
-                            }
-                            if (compressed) {
-                                onProgress('Entpacke Datenbank ...');
-                                // Decompress gzip using DecompressionStream
-                                var ds = new DecompressionStream('gzip');
-                                var writer = ds.writable.getWriter();
-                                writer.write(buf);
-                                writer.close();
-                                return new Response(ds.readable).arrayBuffer().then(function (ab) {
-                                    return new Uint8Array(ab);
-                                });
-                            }
+                        return read().then(function () {
+                            var buf = new Uint8Array(loaded); var off = 0;
+                            for (var i = 0; i < chunks.length; i++) { buf.set(chunks[i], off); off += chunks[i].length; }
                             return buf;
                         });
                     });
                 }
 
-                // Versuche gzip, Fallback auf unkomprimiert
-                return loadDB(gzUrl, true).catch(function () {
-                    onProgress('Lade unkomprimierte Datenbank ...');
-                    return loadDB(dbUrl, false);
-                }).then(function (buf) {
+                function decompressGzip(buf) {
+                    if (typeof DecompressionStream === 'undefined') throw new Error('no DecompressionStream');
+                    var blob = new Blob([buf]);
+                    var ds = blob.stream().pipeThrough(new DecompressionStream('gzip'));
+                    return new Response(ds).arrayBuffer().then(function (ab) { return new Uint8Array(ab); });
+                }
+
+                function progress(loaded, total) {
+                    if (total > 0) onProgress((loaded / 1048576).toFixed(1) + ' MB (' + ((loaded / total) * 100).toFixed(0) + '%)');
+                    else onProgress((loaded / 1048576).toFixed(1) + ' MB geladen ...');
+                }
+
+                // Lokal: unkomprimiert laden (schneller). Remote: gzip versuchen, Fallback unkomprimiert
+                var isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+                var loadPromise;
+                if (isLocal) {
+                    loadPromise = fetchWithProgress(dbUrl, progress);
+                } else {
+                    loadPromise = fetchWithProgress(gzUrl, progress).then(function (buf) {
+                        onProgress('Entpacke Datenbank ...');
+                        return decompressGzip(buf);
+                    }).catch(function () {
+                        onProgress('Lade Datenbank ...');
+                        return fetchWithProgress(dbUrl, progress);
+                    });
+                }
+                return loadPromise.then(function (buf) {
                     onProgress('Initialisiere ...');
                     db = new SQL.Database(buf);
                     resolve(db);
