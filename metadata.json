@@ -1,0 +1,104 @@
+{
+  "title": "BfArM Arzneimittel-Referenzdaten",
+  "description": "Referenzdaten des Bundesinstituts für Arzneimittel und Medizinprodukte (BfArM) – Arzneimittel, pharmazeutische Produkte und Wirkstoffe.",
+  "license": "Datenlizenz Deutschland – Namensnennung",
+  "license_url": "https://www.govdata.de/dl-de/by-2-0",
+  "source": "BfArM",
+  "source_url": "https://www.bfarm.de",
+  "databases": {
+    "bfarm": {
+      "tables": {
+        "medicinal_product": {
+          "title": "Arzneimittel (Medicinal Products)",
+          "description": "Referenzdaten zugelassener Arzneimittel mit PZN, Darreichungsform und Bezeichnung.",
+          "label_column": "rmp_mpd_name",
+          "columns": {
+            "rmp_key": "Schlüssel (Key)",
+            "rmp_pzn": "Pharmazentralnummer (PZN)",
+            "rmp_count_substance": "Anzahl Wirkstoffe",
+            "rmp_multiple_ppt": "Mehrere pharmazeutische Produkte",
+            "rmp_pfm_put_short": "Darreichungsform (kurz)",
+            "rmp_pfm_put_long": "Darreichungsform (lang)",
+            "rmp_pfm_name": "Darreichungsform (Name)",
+            "rmp_pfm_term_id": "Darreichungsform Term-ID",
+            "rmp_mpd_name": "Arzneimittelbezeichnung"
+          }
+        },
+        "pharmaceutical_product": {
+          "title": "Pharmazeutische Produkte",
+          "description": "Pharmazeutische Teilprodukte eines Arzneimittels.",
+          "label_column": "rpp_description",
+          "columns": {
+            "rpp_key": "Schlüssel (Key)",
+            "rmp_key": "Arzneimittel-Key → medicinal_product",
+            "rpp_number": "Teilprodukt-Nr.",
+            "rpp_pfm_put_short": "Darreichungsform (kurz)",
+            "rpp_pfm_put_long": "Darreichungsform (lang)",
+            "rpp_pfm_name": "Darreichungsform (Name)",
+            "rpp_pfm_term_id": "Darreichungsform Term-ID",
+            "rpp_description": "Beschreibung"
+          },
+          "fkey_rules": [
+            ["rmp_key", "medicinal_product", "rmp_key"]
+          ]
+        },
+        "substance": {
+          "title": "Wirkstoffe (Substances)",
+          "description": "Wirkstoffe und deren Stärke je pharmazeutischem Produkt.",
+          "label_column": "rse_substance_name",
+          "columns": {
+            "rse_key": "Schlüssel (Key)",
+            "rpp_key": "Pharma-Produkt-Key → pharmaceutical_product",
+            "rse_substance_name": "Wirkstoffname",
+            "rse_substance_strength": "Stärke",
+            "rse_substance_id": "Wirkstoff-ID",
+            "rse_substance_rank": "Rang"
+          },
+          "fkey_rules": [
+            ["rpp_key", "pharmaceutical_product", "rpp_key"]
+          ]
+        },
+        "_import_meta": {
+          "title": "Import-Metadaten",
+          "description": "Informationen zum letzten Datenimport.",
+          "hidden": true
+        }
+      },
+      "queries": {
+        "suche_arzneimittel": {
+          "title": "🔍 Arzneimittel suchen",
+          "description": "Volltextsuche über Arzneimittelbezeichnungen",
+          "sql": "SELECT rmp_key, rmp_pzn, rmp_mpd_name, rmp_pfm_name, rmp_pfm_put_long FROM medicinal_product WHERE rmp_mpd_name LIKE '%' || :suchbegriff || '%' ORDER BY rmp_mpd_name LIMIT 100",
+          "params": ["suchbegriff"]
+        },
+        "suche_wirkstoff": {
+          "title": "🧪 Wirkstoff suchen",
+          "description": "Alle Arzneimittel mit einem bestimmten Wirkstoff",
+          "sql": "SELECT mp.rmp_pzn, mp.rmp_mpd_name, s.rse_substance_name, s.rse_substance_strength, mp.rmp_pfm_put_long FROM substance s JOIN pharmaceutical_product pp ON s.rpp_key = pp.rpp_key JOIN medicinal_product mp ON pp.rmp_key = mp.rmp_key WHERE s.rse_substance_name LIKE '%' || :wirkstoff || '%' ORDER BY s.rse_substance_name, mp.rmp_mpd_name LIMIT 200",
+          "params": ["wirkstoff"]
+        },
+        "suche_pzn": {
+          "title": "📦 PZN nachschlagen",
+          "description": "Arzneimittel anhand der Pharmazentralnummer finden",
+          "sql": "SELECT mp.rmp_pzn, mp.rmp_mpd_name, mp.rmp_pfm_put_long, pp.rpp_description, s.rse_substance_name, s.rse_substance_strength FROM medicinal_product mp LEFT JOIN pharmaceutical_product pp ON mp.rmp_key = pp.rmp_key LEFT JOIN substance s ON pp.rpp_key = s.rpp_key WHERE mp.rmp_pzn = :pzn ORDER BY s.rse_substance_rank",
+          "params": ["pzn"]
+        },
+        "darreichungsformen": {
+          "title": "💊 Darreichungsformen (Top 50)",
+          "description": "Häufigste Darreichungsformen",
+          "sql": "SELECT rmp_pfm_put_long AS darreichungsform, rmp_pfm_name AS name, COUNT(*) AS anzahl FROM medicinal_product GROUP BY rmp_pfm_put_long, rmp_pfm_name ORDER BY anzahl DESC LIMIT 50"
+        },
+        "wirkstoffe_ranking": {
+          "title": "🏆 Häufigste Wirkstoffe",
+          "description": "Top 100 Wirkstoffe nach Anzahl der Arzneimittel",
+          "sql": "SELECT rse_substance_name AS wirkstoff, rse_substance_id AS id, COUNT(DISTINCT rpp_key) AS anzahl_produkte FROM substance GROUP BY rse_substance_name, rse_substance_id ORDER BY anzahl_produkte DESC LIMIT 100"
+        },
+        "datenstand": {
+          "title": "📋 Datenstand",
+          "description": "Informationen zum aktuellen Datenbestand",
+          "sql": "SELECT key AS eigenschaft, value AS wert FROM _import_meta UNION ALL SELECT 'Arzneimittel', CAST(COUNT(*) AS TEXT) FROM medicinal_product UNION ALL SELECT 'Pharma-Produkte', CAST(COUNT(*) AS TEXT) FROM pharmaceutical_product UNION ALL SELECT 'Wirkstoffe', CAST(COUNT(*) AS TEXT) FROM substance"
+        }
+      }
+    }
+  }
+}

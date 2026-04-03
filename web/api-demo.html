@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BfArM API — Einbindungsbeispiel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 40px 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-size: 20px; margin-bottom: 8px; }
+        p.desc { color: #666; font-size: 14px; margin-bottom: 24px; }
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #555; }
+        input {
+            width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd;
+            border-radius: 8px; outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: #4a7cff; }
+        .status { margin-top: 6px; font-size: 13px; min-height: 20px; }
+        .status.loading { color: #999; }
+        .status.found { color: #16a34a; }
+        .status.not-found { color: #dc2626; }
+        .suggestions { margin-top: 8px; }
+        .suggestion {
+            display: inline-block; background: #e8f0fe; color: #1a56db;
+            padding: 4px 12px; border-radius: 16px; font-size: 13px;
+            margin: 2px 4px 2px 0; cursor: pointer; transition: background 0.2s;
+        }
+        .suggestion:hover { background: #c6dbfe; }
+        .score { font-size: 11px; color: #888; margin-left: 4px; }
+        .init-status {
+            background: #fff; border: 1px solid #ddd; border-radius: 8px;
+            padding: 12px 16px; margin-bottom: 20px; font-size: 13px;
+        }
+        .init-status.ready { border-color: #16a34a; color: #16a34a; }
+        .init-status.error { border-color: #dc2626; color: #dc2626; }
+        code {
+            display: block; background: #1e1e1e; color: #d4d4d4;
+            padding: 16px; border-radius: 8px; font-size: 12px;
+            margin-top: 24px; white-space: pre; overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>BfArM Arzneimittel-API Demo</h1>
+    <p class="desc">Dieses Formular demonstriert die Einbindung der BfArM Fuzzy-Suche auf einer externen Website. Komplett serverless — alles laeuft im Browser.</p>
+
+    <div class="init-status" id="initStatus">Datenbank wird geladen ...</div>
+
+    <div class="field">
+        <label for="medInput">Medikament / Wirkstoff eingeben:</label>
+        <input type="text" id="medInput" placeholder="z.B. Barazettamuhl, Methoprolol, Diklofenack ..." disabled>
+        <div class="status" id="status"></div>
+        <div class="suggestions" id="suggestions"></div>
+    </div>
+
+    <div class="field">
+        <label for="pznInput">PZN nachschlagen:</label>
+        <input type="text" id="pznInput" placeholder="z.B. 10203626" disabled>
+        <div class="status" id="pznStatus"></div>
+    </div>
+
+    <code>&lt;!-- Einbindung auf deiner Website: --&gt;
+&lt;script src="https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/web/js/bfarm-api.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  var api = new BfarmAPI();
+  api.init().then(function() {
+    var result = api.checkSpelling('Barazettamuhl');
+    console.log(result.suggestions);
+  });
+&lt;/script&gt;</code>
+</div>
+
+<script src="js/bfarm-api.js"></script>
+<script>
+(function () {
+    var api = new BfarmAPI({
+        dbURL: '/db/bfarm.db'
+    });
+    var initStatus = document.getElementById('initStatus');
+    var medInput = document.getElementById('medInput');
+    var pznInput = document.getElementById('pznInput');
+    var statusEl = document.getElementById('status');
+    var suggestionsEl = document.getElementById('suggestions');
+    var pznStatusEl = document.getElementById('pznStatus');
+    var debounce = null;
+
+    api.init(function (msg) {
+        initStatus.textContent = msg;
+    }).then(function () {
+        initStatus.textContent = 'Datenbank geladen — bereit';
+        initStatus.classList.add('ready');
+        medInput.disabled = false;
+        pznInput.disabled = false;
+        medInput.focus();
+    }).catch(function (e) {
+        initStatus.textContent = 'Fehler: ' + e.message;
+        initStatus.classList.add('error');
+    });
+
+    medInput.addEventListener('input', function () {
+        clearTimeout(debounce);
+        debounce = setTimeout(function () {
+            var q = medInput.value.trim();
+            if (!q || q.length < 2) {
+                statusEl.textContent = '';
+                suggestionsEl.innerHTML = '';
+                return;
+            }
+            var result = api.checkSpelling(q, 'substance');
+            if (result.found) {
+                statusEl.className = 'status found';
+                statusEl.textContent = 'Korrekt: ' + result.exact_match;
+                suggestionsEl.innerHTML = '';
+            } else {
+                statusEl.className = 'status not-found';
+                statusEl.textContent = result.suggestions.length
+                    ? 'Nicht gefunden. Meintest du:'
+                    : 'Kein Treffer gefunden';
+                suggestionsEl.innerHTML = result.suggestions.slice(0, 5).map(function (s) {
+                    return '<span class="suggestion" data-name="' + s.name + '">' +
+                        s.name + '<span class="score">' + (s.score * 100).toFixed(0) + '%</span></span>';
+                }).join('');
+            }
+        }, 300);
+    });
+
+    suggestionsEl.addEventListener('click', function (e) {
+        var target = e.target.closest('.suggestion');
+        if (target) {
+            medInput.value = target.dataset.name;
+            statusEl.className = 'status found';
+            statusEl.textContent = 'Ausgewaehlt: ' + target.dataset.name;
+            suggestionsEl.innerHTML = '';
+        }
+    });
+
+    pznInput.addEventListener('input', function () {
+        clearTimeout(debounce);
+        debounce = setTimeout(function () {
+            var q = pznInput.value.trim();
+            if (!q || q.length < 7) { pznStatusEl.textContent = ''; return; }
+            var result = api.lookupPZN(q);
+            if (result) {
+                pznStatusEl.className = 'status found';
+                var text = result.name;
+                if (result.substances.length) text += ' (' + result.substances.map(function (s) { return s.name; }).join(', ') + ')';
+                pznStatusEl.textContent = text;
+            } else {
+                pznStatusEl.className = 'status not-found';
+                pznStatusEl.textContent = 'PZN nicht gefunden';
+            }
+        }, 300);
+    });
+})();
+</script>
+</body>
+</html>
