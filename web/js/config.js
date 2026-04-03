@@ -1,12 +1,25 @@
 /*  BfArM Referenzdaten — Konfiguration  */
 
-var BFARM_CONFIG = {
-    DB_URL: (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:')
-        ? '/db/bfarm.db'
-        : 'https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/db/bfarm.db',
+var BFARM_CONFIG = (function () {
+    var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
+    var isGitHubPages = location.hostname.indexOf('github.io') >= 0;
+    var isCodebergPages = location.hostname.indexOf('codeberg.page') >= 0;
 
-    SQLJS_CDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3',
+    var dbBase;
+    if (isLocal) {
+        dbBase = '/db/bfarm.db';
+    } else if (isGitHubPages) {
+        // Same-Origin auf GitHub Pages — kein CORS
+        dbBase = '/Referenzdaten_at_bfarm.de/db/bfarm.db';
+    } else if (isCodebergPages) {
+        // Cross-Origin zu GitHub Pages (GitHub setzt CORS: *)
+        dbBase = 'https://raimurokko.github.io/Referenzdaten_at_bfarm.de/db/bfarm.db';
+    } else {
+        dbBase = 'https://raimurokko.github.io/Referenzdaten_at_bfarm.de/db/bfarm.db';
+    }
 
-    // DB wird als .gz geladen wenn verfügbar (14 MB statt 57 MB)
-    // Fallback auf unkomprimierte .db wenn .gz nicht vorhanden
-};
+    return {
+        DB_URL: dbBase,
+        SQLJS_CDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3'
+    };
+})();

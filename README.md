@@ -2,18 +2,23 @@
 
 Serverlose Datenbank der BfArM-Referenzdaten (Arzneimittel, pharmazeutische Produkte, Wirkstoffe) mit Fuzzy-Suche, Schreibkorrektur, Spracheingabe, Kamera/OCR und Rezeptwunsch-Formular.
 
-Gehostet auf [Codeberg](https://codeberg.org/raimu/Referenzdaten_at_bfarm.de), abfragbar direkt im Browser — kein Server, keine Installation. Alle Daten verbleiben im Browser.
+Gehostet auf [GitHub](https://github.com/raimurokko/Referenzdaten_at_bfarm.de) und [Codeberg](https://codeberg.org/raimu/Referenzdaten_at_bfarm.de), abfragbar direkt im Browser — kein Server, keine Installation. Alle Daten verbleiben im Browser.
 
 ## Live-Zugriff
 
-**Web-Oberfläche:**
+**Web-Oberfläche (GitHub Pages):**
+```
+https://raimurokko.github.io/Referenzdaten_at_bfarm.de/web/
+```
+
+**Web-Oberfläche (Codeberg Pages):**
 ```
 https://raimu.codeberg.page/Referenzdaten_at_bfarm.de/web/
 ```
 
 **Datasette Lite (SQL-Browser):**
 ```
-https://lite.datasette.io/?url=https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/db/bfarm.db
+https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfarm.de/db/bfarm.db
 ```
 
 ## Funktionen
@@ -126,7 +131,7 @@ Suchbar per Freitext-Autocomplete und Spracheingabe. Bei Mehrdeutigkeit (z.B. "B
 Für die Einbindung in ein Formular auf einer anderen Website:
 
 ```html
-<script src="https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/web/js/bfarm-api.js"></script>
+<script src="https://raimurokko.github.io/Referenzdaten_at_bfarm.de/web/js/bfarm-api.js"></script>
 <script>
   var api = new BfarmAPI();
   api.init().then(function() {

@@ -22,7 +22,7 @@
     'use strict';
 
     var DEFAULTS = {
-        dbURL: 'https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/db/bfarm.db',
+        dbURL: 'https://raimurokko.github.io/Referenzdaten_at_bfarm.de/db/bfarm.db',
         sqljsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3'
     };
 
