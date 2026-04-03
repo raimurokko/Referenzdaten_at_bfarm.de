@@ -343,7 +343,7 @@ def main():
         os.remove(args.output)
 
     conn = sqlite3.connect(args.output)
-    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA journal_mode=DELETE")
     conn.execute("PRAGMA foreign_keys=ON")
 
     for table_def in TABLE_DEFS:
