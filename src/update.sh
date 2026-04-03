@@ -36,7 +36,13 @@ echo "2. Datenbank generieren..."
 cd "$PROJECT_DIR"
 python3 src/import_bfarm.py "$DSV_DIR"
 
-# 3. Zusammenfassung
+# 3. Gzip-Version erstellen
+echo ""
+echo "3. Gzip-Version erstellen..."
+gzip -k -9 -f "$PROJECT_DIR/db/bfarm.db"
+echo "   db/bfarm.db.gz ($(du -h "$PROJECT_DIR/db/bfarm.db.gz" | cut -f1))"
+
+# 4. Zusammenfassung
 echo ""
 echo "=== Zusammenfassung ==="
 echo "DSV-Verzeichnis:    $DSV_DIR"
@@ -44,6 +50,6 @@ echo "Lieferengpaesse:    $LE_LINES Zeilen"
 echo "Datenbank:          db/bfarm.db ($(du -h db/bfarm.db | cut -f1))"
 echo ""
 echo "Naechste Schritte:"
-echo "  git add db/bfarm.db data/lieferengpass.csv $DSV_DIR"
+echo "  git add db/bfarm.db db/bfarm.db.gz data/lieferengpass.csv $DSV_DIR"
 echo "  git commit -m 'Datenupdate $(date +%Y-%m-%d)'"
 echo "  git push"

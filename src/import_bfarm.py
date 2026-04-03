@@ -356,8 +356,9 @@ def main():
         count = import_dsv(conn, filepath, table_def)
         print(f"   ✓ {count:,} rows imported")
 
-    print("\n🔍 Creating full-text search indexes...")
-    create_fts(conn)
+    # FTS-Tabellen werden nicht mehr benötigt (Suche läuft client-seitig per JS)
+    # print("\n🔍 Creating full-text search indexes...")
+    # create_fts(conn)
 
     # Lieferengpass import
     if not args.no_shortage:

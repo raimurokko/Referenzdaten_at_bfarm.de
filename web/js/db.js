@@ -14,36 +14,65 @@ var BfarmDB = (function () {
             initSqlJs({
                 locateFile: function (f) { return BFARM_CONFIG.SQLJS_CDN + '/' + f; }
             }).then(function (SQL) {
+                // Versuche zuerst gzip-Version (14 MB statt 57 MB)
+                var dbUrl = BFARM_CONFIG.DB_URL;
+                var isGzip = false;
+                var gzUrl = dbUrl + '.gz';
+
                 onProgress('Lade Datenbank ...');
-                return fetch(BFARM_CONFIG.DB_URL).then(function (resp) {
-                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                    var total = parseInt(resp.headers.get('content-length') || '0');
-                    var reader = resp.body.getReader();
-                    var chunks = [], loaded = 0;
 
-                    function readChunk() {
-                        return reader.read().then(function (result) {
-                            if (result.done) return;
-                            chunks.push(result.value);
-                            loaded += result.value.length;
-                            if (total > 0) {
-                                onProgress((loaded / 1048576).toFixed(1) + ' MB (' + ((loaded / total) * 100).toFixed(0) + '%)');
-                            }
-                            return readChunk();
-                        });
-                    }
+                function loadDB(url, compressed) {
+                    return fetch(url).then(function (resp) {
+                        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                        var total = parseInt(resp.headers.get('content-length') || '0');
+                        var reader = resp.body.getReader();
+                        var chunks = [], loaded = 0;
 
-                    return readChunk().then(function () {
-                        onProgress('Initialisiere ...');
-                        var buf = new Uint8Array(loaded);
-                        var off = 0;
-                        for (var i = 0; i < chunks.length; i++) {
-                            buf.set(chunks[i], off);
-                            off += chunks[i].length;
+                        function readChunk() {
+                            return reader.read().then(function (result) {
+                                if (result.done) return;
+                                chunks.push(result.value);
+                                loaded += result.value.length;
+                                if (total > 0) {
+                                    onProgress((loaded / 1048576).toFixed(1) + ' MB (' + ((loaded / total) * 100).toFixed(0) + '%)');
+                                } else {
+                                    onProgress((loaded / 1048576).toFixed(1) + ' MB geladen ...');
+                                }
+                                return readChunk();
+                            });
                         }
-                        db = new SQL.Database(buf);
-                        resolve(db);
+
+                        return readChunk().then(function () {
+                            var buf = new Uint8Array(loaded);
+                            var off = 0;
+                            for (var i = 0; i < chunks.length; i++) {
+                                buf.set(chunks[i], off);
+                                off += chunks[i].length;
+                            }
+                            if (compressed) {
+                                onProgress('Entpacke Datenbank ...');
+                                // Decompress gzip using DecompressionStream
+                                var ds = new DecompressionStream('gzip');
+                                var writer = ds.writable.getWriter();
+                                writer.write(buf);
+                                writer.close();
+                                return new Response(ds.readable).arrayBuffer().then(function (ab) {
+                                    return new Uint8Array(ab);
+                                });
+                            }
+                            return buf;
+                        });
                     });
+                }
+
+                // Versuche gzip, Fallback auf unkomprimiert
+                return loadDB(gzUrl, true).catch(function () {
+                    onProgress('Lade unkomprimierte Datenbank ...');
+                    return loadDB(dbUrl, false);
+                }).then(function (buf) {
+                    onProgress('Initialisiere ...');
+                    db = new SQL.Database(buf);
+                    resolve(db);
                 });
             }).catch(reject);
         });

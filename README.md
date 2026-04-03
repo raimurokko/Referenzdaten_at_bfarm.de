@@ -6,7 +6,7 @@ Gehostet auf [Codeberg](https://codeberg.org/raimu/Referenzdaten_at_bfarm.de), a
 
 ## Live-Zugriff
 
-**Web-Oberfl\u00e4che:**
+**Web-Oberfläche:**
 ```
 https://raimu.codeberg.page/Referenzdaten_at_bfarm.de/web/
 ```
@@ -19,84 +19,84 @@ https://lite.datasette.io/?url=https://codeberg.org/raimu/Referenzdaten_at_bfarm
 ## Funktionen
 
 ### Suche
-- **Fuzzy-Suche** mit K\u00f6lner Phonetik, Levenshtein-Distanz und Trigram-\u00c4hnlichkeit
-- **Automatische Schreibkorrektur** ("Barazettamuhl" \u2192 Paracetamol, "Methoprolol" \u2192 Metoprololsuccinat)
-- **Multi-Token-Suche** f\u00fcr Arzneimittel ("Paracetaml Hex" \u2192 Paracetamol HEXAL)
+- **Fuzzy-Suche** mit Kölner Phonetik, Levenshtein-Distanz und Trigram-Ähnlichkeit
+- **Automatische Schreibkorrektur** ("Barazettamuhl" → Paracetamol, "Methoprolol" → Metoprololsuccinat)
+- **Multi-Token-Suche** für Arzneimittel ("Paracetaml Hex" → Paracetamol HEXAL)
 - **Wirkstoff-Drill-Down**: Klick auf Wirkstoff zeigt alle Arzneimittel mit diesem Wirkstoff
-- **Wirkstoff-IDs** (BfArM `rse_substance_id`) werden durchg\u00e4ngig mitgef\u00fchrt
+- **Wirkstoff-IDs** (BfArM `rse_substance_id`) werden durchgängig mitgeführt
 - **PZN-Suche** mit automatischer Wirkstoff-Zuordnung
-- SQL-Editor f\u00fcr beliebige Abfragen
-- JSON-API f\u00fcr Einbindung in externe Formulare
+- SQL-Editor für beliebige Abfragen
+- JSON-API für Einbindung in externe Formulare
 
 ### Spracheingabe
-- **Web Speech API** (de-DE) f\u00fcr Suchfeld und alle Formularfelder
-- **Diktiermodus**: "Formular diktieren" \u2014 alle Felder nacheinander per Sprache ausf\u00fcllen
-- Sprachkommandos: **WEITER** (n\u00e4chstes Feld), **STOPP/FERTIG** (beenden), **\u00dcBERSPRINGEN** (Feld leer lassen)
-- 2-Phasen-Erkennung: Eingabe \u2192 Warte auf Kommando (Wert wird nicht \u00fcberschrieben)
-- Automatische Gro\u00dfbuchstaben-Konvertierung
+- **Web Speech API** (de-DE) für Suchfeld und alle Formularfelder
+- **Diktiermodus**: "Formular diktieren" — alle Felder nacheinander per Sprache ausfüllen
+- Sprachkommandos: **WEITER** (nächstes Feld), **STOPP/FERTIG** (beenden), **ÜBERSPRINGEN** (Feld leer lassen)
+- 2-Phasen-Erkennung: Eingabe → Warte auf Kommando (Wert wird nicht überschrieben)
+- Automatische Großbuchstaben-Konvertierung
 
 ### Kamera / OCR / Barcode
 - **5 Scan-Modi**: Strichcode/EAN, QR-Code, Text/OCR, **Medikamentenpass**, Foto-Upload
-- **Tesseract.js** OCR mit Schwarzwei\u00df-Vorverarbeitung (Binarisierung)
-- **html5-qrcode** f\u00fcr Barcode-/QR-Erkennung
+- **Tesseract.js** OCR mit Schwarzweiß-Vorverarbeitung (Binarisierung)
+- **html5-qrcode** für Barcode-/QR-Erkennung
 - PZN-Extraktion aus EAN-13 Strichcodes
-- Erkannte Medikamente direkt zur Liste hinzuf\u00fcgen
-- **Medikamentenpass-Scan**: QR-Code vom Medikamentenpass einlesen \u2192 Patientendaten + Medikamentenliste werden automatisch ins Formular \u00fcbernommen
+- Erkannte Medikamente direkt zur Liste hinzufügen
+- **Medikamentenpass-Scan**: QR-Code vom Medikamentenpass einlesen → Patientendaten + Medikamentenliste werden automatisch ins Formular übernommen
 
 ### Medikamentenliste & Rezeptanfrage
-- Medikamente aus Suche, Drill-Down oder Kamera-Scan hinzuf\u00fcgen
-- **Formular**: Patient/in (Pflichtfeld), E-Mail, Telefon (mind. eines Pflicht), Geburtsdatum (Datepicker + Freitext-Parsing), Versichertennummer (KVNR mit Pr\u00fcfsummen-Validierung), Krankenkasse (GKV/PKV/Selbstzahler mit IK-Nummern), Empf\u00e4nger, Nachricht
-- **KVNR-Validierung**: Format A123456789 \u2014 Pr\u00fcfsumme nach Modulo-10 (alternierend Gewicht 1/2). Visuelles Feedback: gr\u00fcn = g\u00fcltig, rot = ung\u00fcltig mit Fehlerbeschreibung
+- Medikamente aus Suche, Drill-Down oder Kamera-Scan hinzufügen
+- **Formular**: Patient/in (Pflichtfeld), E-Mail, Telefon (mind. eines Pflicht), Geburtsdatum (Datepicker + Freitext-Parsing), Versichertennummer (KVNR mit Prüfsummen-Validierung), Krankenkasse (GKV/PKV/Selbstzahler mit IK-Nummern), Empfänger, Nachricht
+- **KVNR-Validierung**: Format A123456789 — Prüfsumme nach Modulo-10 (alternierend Gewicht 1/2). Visuelles Feedback: grün = gültig, rot = ungültig mit Fehlerbeschreibung
 - **E-Mail-Validierung**: RFC 5322 (vereinfacht), visuelles Feedback
-- **Telefon-Validierung**: Deutsche Nummern \u2014 erkennt Mobilnetz (0150-0179), Festnetz-Vorwahlen, Sondernummern. Normalisiert +49/0049. Pr\u00fcft L\u00e4nge (10-13 Ziffern)
-- **Pflichtfelder**: PDF-Erstellung nur m\u00f6glich wenn Name + (E-Mail oder Telefon) ausgef\u00fcllt
-- **Formular diktieren**: Komplettes Formular per Sprache ausf\u00fcllen
-- **Formular l\u00f6schen**: Alle Felder auf einmal zur\u00fccksetzen
-- Jedes Feld mit Spracheingabe (\ud83c\udf99) und L\u00f6schen-Button (\u00d7)
+- **Telefon-Validierung**: Deutsche Nummern — erkennt Mobilnetz (0150-0179), Festnetz-Vorwahlen, Sondernummern. Normalisiert +49/0049. Prüft Länge (10-13 Ziffern)
+- **Pflichtfelder**: PDF-Erstellung nur möglich wenn Name + (E-Mail oder Telefon) ausgefüllt
+- **Formular diktieren**: Komplettes Formular per Sprache ausfüllen
+- **Formular löschen**: Alle Felder auf einmal zurücksetzen
+- Jedes Feld mit Spracheingabe (\ud83c\udf99) und Löschen-Button (×)
 
 ### Export
-- **PDF** (TLP:AMBER+STRICT): Schreibgesch\u00fctzt, Amber-Banner, min. 12pt Schrift, QR-Code mit Klartext-Inhalt, Basisdaten auf jeder Seite, Tabellen-Header auf Folgeseiten, leere Felder als "OHNE ANGABE"
+- **PDF** (TLP:AMBER+STRICT): Schreibgeschützt, Amber-Banner, min. 12pt Schrift, QR-Code mit Klartext-Inhalt, Basisdaten auf jeder Seite, Tabellen-Header auf Folgeseiten, leere Felder als "OHNE ANGABE"
 - **QR-Code**: Kompaktes JSON mit PZN + Wirkstoff-ID (~30-40 Bytes/Medikament), als Modal + PNG-Download
 - **CSV-Export** mit Wirkstoff-ID-Spalte
-- **Verschl\u00fcsselte E-Mail**: AES-256-GCM + PBKDF2 (600.000 Iterationen)
+- **Verschlüsselte E-Mail**: AES-256-GCM + PBKDF2 (600.000 Iterationen)
 - **Zwischenablage**: Klartext-Kopie
 
 ### Lieferengpass-Check & Generika-Abgleich
 
 - **Lieferengpass-Daten**: CSV von PharmNet.Bund wird beim App-Start im Hintergrund geladen
-- **Automatischer Abgleich**: Jede PZN in Suchergebnissen und Medikamentenliste wird gegen aktuelle Lieferengp\u00e4sse gepr\u00fcft
-- **Warnung**: \u26a0 Lieferengpass mit Grund, Ende-Datum und Hersteller-Alternative (wenn vorhanden)
-- **Generika-Vorschl\u00e4ge**: Button "Generika anzeigen" pro Medikament \u2014 sucht per Wirkstoff-ID (`rse_substance_id`) alle Arzneimittel mit identischem Wirkstoff
-- **Verf\u00fcgbarkeit**: Jedes Generikum zeigt \u2713 verf\u00fcgbar oder \u26a0 Engpass
-- **Im PDF**: Lieferengp\u00e4sse werden rot markiert mit Alternative
+- **Automatischer Abgleich**: Jede PZN in Suchergebnissen und Medikamentenliste wird gegen aktuelle Lieferengpässe geprüft
+- **Warnung**: ⚠ Lieferengpass mit Grund, Ende-Datum und Hersteller-Alternative (wenn vorhanden)
+- **Generika-Vorschläge**: Button "Generika anzeigen" pro Medikament — sucht per Wirkstoff-ID (`rse_substance_id`) alle Arzneimittel mit identischem Wirkstoff
+- **Verfügbarkeit**: Jedes Generikum zeigt ✓ verfügbar oder ⚠ Engpass
+- **Im PDF**: Lieferengpässe werden rot markiert mit Alternative
 - **Im QR-Code**: `e:1` (Engpass-Flag) + `a:"Alternativname"` pro Medikament
-- **Zeitstempel**: Datenstand-Zeile zeigt Anzahl Lieferengp\u00e4sse + Stand-Datum + Quelle
-- **Klickbare Warnungen**: Klick auf Engpass-Warnung in Suchergebnissen oder Lieferengpass-Tab zeigt sofort alle Generika/Alternativen mit Verf\u00fcgbarkeitsstatus
-- **Klassifikation**: Freiverkäuflich (OTC), Apothekenpflichtig, Verschreibungspflichtig \u2014 als Badge und im PDF
-- **Filter**: Lieferengpass-Tab mit Chips: Alle | Verschreibungspflichtig | Apothekenpflichtig | Freiverk\u00e4uflich | KKH-relevant
+- **Zeitstempel**: Datenstand-Zeile zeigt Anzahl Lieferengpässe + Stand-Datum + Quelle
+- **Klickbare Warnungen**: Klick auf Engpass-Warnung in Suchergebnissen oder Lieferengpass-Tab zeigt sofort alle Generika/Alternativen mit Verfügbarkeitsstatus
+- **Klassifikation**: Freiverkäuflich (OTC), Apothekenpflichtig, Verschreibungspflichtig — als Badge und im PDF
+- **Filter**: Lieferengpass-Tab mit Chips: Alle | Verschreibungspflichtig | Apothekenpflichtig | Freiverkäuflich | KKH-relevant
 
 ### Statistiken
-- Top 20 Wirkstoffe nach H\u00e4ufigkeit
+- Top 20 Wirkstoffe nach Häufigkeit
 - Darreichungsformen-Verteilung
 - Wirkstoffe pro Arzneimittel (Verteilung)
 - CSS-Balkendiagramme (kein Chart-Framework)
 
 ### Datenstand
 - Aktuelles Datum mit Wochentag
-- Datenstand mit n\u00e4chstem Update-Countdown (14-Tage-Zyklus)
+- Datenstand mit nächstem Update-Countdown (14-Tage-Zyklus)
 
 ## Sicherheit
 
 ### Datenschutz
 - **Komplett serverless**: Alle Daten verbleiben im Browser, kein Upload
 - **Nur sessionStorage**: Keine persistenten Daten, alles weg bei Tab-Close
-- **AES-256-GCM Verschl\u00fcsselung** des sessionStorage (Session-Key pro Tab)
-- **Inaktivit\u00e4ts-Timeout**: Automatische L\u00f6schung nach 5 Minuten
-- **beforeunload**: L\u00f6scht sessionStorage + Cache bei Reload/Tab-Close
-- **"Sitzung beenden"**: Manueller Button l\u00f6scht alles
-- **DB-Zerst\u00f6rung**: Bei Inaktivit\u00e4t/Sitzungsende wird die SQL-Datenbank aus dem RAM entfernt (`db.close()` + null)
-- **IndexedDB-L\u00f6schung**: Alle IndexedDB-Datenbanken werden gel\u00f6scht
-- Kamera-Bilder werden nach OCR aus dem RAM gel\u00f6scht
+- **AES-256-GCM Verschlüsselung** des sessionStorage (Session-Key pro Tab)
+- **Inaktivitäts-Timeout**: Automatische Löschung nach 5 Minuten
+- **beforeunload**: Löscht sessionStorage + Cache bei Reload/Tab-Close
+- **"Sitzung beenden"**: Manueller Button löscht alles
+- **DB-Zerstörung**: Bei Inaktivität/Sitzungsende wird die SQL-Datenbank aus dem RAM entfernt (`db.close()` + null)
+- **IndexedDB-Löschung**: Alle IndexedDB-Datenbanken werden gelöscht
+- Kamera-Bilder werden nach OCR aus dem RAM gelöscht
 
 ### PDF-Sicherheit
 - **TLP:AMBER+STRICT** Klassifizierung auf jeder Seite (Amber-Banner)
@@ -104,26 +104,26 @@ https://lite.datasette.io/?url=https://codeberg.org/raimu/Referenzdaten_at_bfarm
 - Vertraulichkeitshinweis in 12pt
 - Dateiname: `TLP-AMBER-STRICT_Rezeptwunsch_<UUID>_<DATUM>.pdf`
 
-### E-Mail-Verschl\u00fcsselung
+### E-Mail-Verschlüsselung
 - AES-256-GCM + PBKDF2 (600.000 Iterationen), post-quanten-sicher nach BSI TR-02102-1
-- ML-KEM-768 (CRYSTALS-Kyber) Hybrid-Verschl\u00fcsselung optional (WASM)
-- Passwort wird nicht mitgesendet \u2014 separate \u00dcbermittlung erforderlich
+- ML-KEM-768 (CRYSTALS-Kyber) Hybrid-Verschlüsselung optional (WASM)
+- Passwort wird nicht mitgesendet — separate Übermittlung erforderlich
 
 ### Haftungsausschluss
-- **Disclaimer-Modal** beim ersten Besuch (muss best\u00e4tigt werden)
+- **Disclaimer-Modal** beim ersten Besuch (muss bestätigt werden)
 - **Footer**: Permanenter Hinweis auf jeder Seite
-- Kein Service des BfArM, keine Gew\u00e4hr f\u00fcr Vollst\u00e4ndigkeit/Richtigkeit
+- Kein Service des BfArM, keine Gewähr für Vollständigkeit/Richtigkeit
 - Konsultation einer Fachperson empfohlen
 
 ## Krankenkassen-Verzeichnis
 
-87 gesetzliche (GKV) und 34 private Krankenversicherungen (PKV) mit **Institutionskennzeichen (IK)** (9-stellig). Zus\u00e4tzlich: Selbstzahler/in.
+87 gesetzliche (GKV) und 34 private Krankenversicherungen (PKV) mit **Institutionskennzeichen (IK)** (9-stellig). Zusätzlich: Selbstzahler/in.
 
 Suchbar per Freitext-Autocomplete und Spracheingabe. Bei Mehrdeutigkeit (z.B. "BKK") werden passende Optionen zur Auswahl angezeigt.
 
 ## API-Einbindung (serverless)
 
-F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
+Für die Einbindung in ein Formular auf einer anderen Website:
 
 ```html
 <script src="https://codeberg.org/raimu/Referenzdaten_at_bfarm.de/raw/branch/main/web/js/bfarm-api.js"></script>
@@ -140,7 +140,7 @@ F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
 
 | Methode | Beschreibung |
 |---------|-------------|
-| `init(onProgress?)` | L\u00e4dt sql.js + Datenbank |
+| `init(onProgress?)` | Lädt sql.js + Datenbank |
 | `checkSpelling(name, type?)` | Schreibkorrektur. `type`: `'substance'` oder `'medication'` |
 | `searchSubstance(query, max?)` | Wirkstoff-Fuzzy-Suche |
 | `searchMedication(query, max?)` | Arzneimittel-Fuzzy-Suche (Multi-Token) |
@@ -153,7 +153,7 @@ F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
 \u251c\u2500\u2500 .gitignore
 \u251c\u2500\u2500 metadata.json              # Datasette-Konfiguration
 \u2502
-\u251c\u2500\u2500 data/                      # DSV-Quelldaten (14-t\u00e4gig aktualisiert)
+\u251c\u2500\u2500 data/                      # DSV-Quelldaten (14-tägig aktualisiert)
 \u2502   \u2514\u2500\u2500 20260401-REFERENCE/
 \u2502
 \u251c\u2500\u2500 db/                        # Generierte SQLite-Datenbank
@@ -163,7 +163,7 @@ F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
 \u2502   \u2514\u2500\u2500 BfArM-Technische-Dokumentation.pdf
 \u2502
 \u251c\u2500\u2500 src/                       # Python-Werkzeuge
-\u2502   \u251c\u2500\u2500 import_bfarm.py        # DSV + Lieferengp\u00e4sse \u2192 SQLite
+\u2502   \u251c\u2500\u2500 import_bfarm.py        # DSV + Lieferengpässe → SQLite
 \u2502   \u251c\u2500\u2500 update.sh              # Automatisiertes Update-Skript
 \u2502   \u2514\u2500\u2500 fuzzy_lookup.py        # CLI Fuzzy-Suche
 \u2502
@@ -174,7 +174,7 @@ F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
     \u2502   \u2514\u2500\u2500 style.css
     \u2514\u2500\u2500 js/
         \u251c\u2500\u2500 config.js          # DB-URL, Pfade
-        \u251c\u2500\u2500 phonetics.js       # K\u00f6lner Phonetik, Levenshtein, Trigram
+        \u251c\u2500\u2500 phonetics.js       # Kölner Phonetik, Levenshtein, Trigram
         \u251c\u2500\u2500 scoring.js         # Scoring-Engine
         \u251c\u2500\u2500 db.js              # Datenbank-Layer + Datenstand
         \u251c\u2500\u2500 search.js          # Multi-Token-Fuzzy-Suche
@@ -214,19 +214,19 @@ F\u00fcr die Einbindung in ein Formular auf einer anderen Website:
 |------|-------------|
 | `v` | Schema-Version (aktuell: 1) |
 | `t` | Erstellungszeitpunkt (ISO 8601) |
-| `p.n` | Patient Name (Gro\u00dfbuchstaben) |
+| `p.n` | Patient Name (Großbuchstaben) |
 | `p.d` | Geburtsdatum (TT.MM.JJJJ) |
 | `p.i` | Versichertennummer |
 | `p.k` | Krankenkasse (mit IK-Nummer) |
-| `r` | Empf\u00e4nger (Praxis/Apotheke) |
+| `r` | Empfänger (Praxis/Apotheke) |
 | `m[].z` | PZN (Pharmazentralnummer) |
 | `m[].s` | BfArM Wirkstoff-ID (`rse_substance_id`) |
-| `m[].q` | St\u00e4rke/Dosierung |
+| `m[].q` | Stärke/Dosierung |
 | `m[].n` | Arzneimittelname |
-| `m[].e` | Lieferengpass-Flag (1 = Engpass, fehlt = verf\u00fcgbar) |
-| `m[].a` | Alternativpr\u00e4parat bei Lieferengpass (lt. Hersteller) |
+| `m[].e` | Lieferengpass-Flag (1 = Engpass, fehlt = verfügbar) |
+| `m[].a` | Alternativpräparat bei Lieferengpass (lt. Hersteller) |
 
-Im PDF wird der QR-Inhalt zus\u00e4tzlich als Klartext neben dem QR-Code abgedruckt.
+Im PDF wird der QR-Inhalt zusätzlich als Klartext neben dem QR-Code abgedruckt.
 
 ## XML-Schema (Medikamentenliste)
 
@@ -241,7 +241,7 @@ Namespace: `urn:bfarm-referenzdaten:medliste:v1`
     <Versichertennummer>A123456789</Versichertennummer>
     <Versicherung>Techniker Krankenkasse (TK)</Versicherung>
   </Patient>
-  <Empf\u00e4nger>Praxis Dr. Schmidt</Empf\u00e4nger>
+  <Empfänger>Praxis Dr. Schmidt</Empfänger>
   <Nachricht>Folgerezept bitte</Nachricht>
   <Arzneimittel anzahl="2">
     <Medikament nr="1">
@@ -249,23 +249,23 @@ Namespace: `urn:bfarm-referenzdaten:medliste:v1`
       <PZN>16795349</PZN>
       <Wirkstoff>Metoprololsuccinat</Wirkstoff>
       <WirkstoffId>11953</WirkstoffId>
-      <St\u00e4rke>95 mg</St\u00e4rke>
+      <Stärke>95 mg</Stärke>
       <Darreichungsform>Retardtablette</Darreichungsform>
     </Medikament>
   </Arzneimittel>
   <Lieferengpaesse quelle="PharmNet.Bund" stand="2026-04-03T14:23:00Z" anzahl="847"/>
-  <TLP klassifizierung="AMBER+STRICT">Nur f\u00fcr Fachpersonal.</TLP>
+  <TLP klassifizierung="AMBER+STRICT">Nur für Fachpersonal.</TLP>
 </MedikamentenListe>
 ```
 
 ## PDF-Aufbau (TLP:AMBER+STRICT)
 
-- **Kopfzeile**: Amber-Hintergrund, "TLP:AMBER+STRICT" rechtsb\u00fcndig (Amber auf Schwarz, 12pt)
-- **Basisdaten** auf jeder Seite: Titel, Datum, Dok.-ID, Patient, Geburtsdatum, Vers.-Nr., Versicherung, Empf\u00e4nger (leere Felder: "OHNE ANGABE")
-- **Medikamenten-Tabelle**: Nr. | Arzneimittel (Umbrechen) | PZN | Wirkstoff [ID] | St\u00e4rke/Form. Tabellen-Header auf Folgeseiten.
+- **Kopfzeile**: Amber-Hintergrund, "TLP:AMBER+STRICT" rechtsbündig (Amber auf Schwarz, 12pt)
+- **Basisdaten** auf jeder Seite: Titel, Datum, Dok.-ID, Patient, Geburtsdatum, Vers.-Nr., Versicherung, Empfänger (leere Felder: "OHNE ANGABE")
+- **Medikamenten-Tabelle**: Nr. | Arzneimittel (Umbrechen) | PZN | Wirkstoff [ID] | Stärke/Form. Tabellen-Header auf Folgeseiten.
 - **QR-Code**: Links QR-Bild, rechts Klartext-Inhalt aller Medikamente
 - **Vertraulichkeitshinweis**: Volle Seitenbreite, 12pt
-- **Fu\u00dfzeile**: Amber-Hintergrund, Seitenzahl, TLP-Badge
+- **Fußzeile**: Amber-Hintergrund, Seitenzahl, TLP-Badge
 - Dateiname: `TLP-AMBER-STRICT_Rezeptwunsch_<UUID>_<YYYY-MM-DD>.pdf`
 
 ## Update-Workflow (alle 14 Tage)
@@ -277,7 +277,7 @@ Namespace: `urn:bfarm-referenzdaten:medliste:v1`
 mkdir -p data/20260415-REFERENCE
 # DSV-Dateien in data/20260415-REFERENCE/ ablegen
 
-# 2. Komplettes Update (Arzneimittel-DB + Lieferengp\u00e4sse)
+# 2. Komplettes Update (Arzneimittel-DB + Lieferengpässe)
 ./src/update.sh data/20260415-REFERENCE/
 
 # 3. Commit & Push
@@ -286,15 +286,15 @@ git commit -m "Datenupdate 2026-04-15"
 git push
 ```
 
-Das Update-Skript (`src/update.sh`) f\u00fchrt automatisch aus:
+Das Update-Skript (`src/update.sh`) führt automatisch aus:
 1. Download der aktuellen Lieferengpass-CSV von PharmNet.Bund
-2. Import aller DSV-Dateien + Lieferengp\u00e4sse in `db/bfarm.db`
-3. Zusammenfassung mit Datenbankgr\u00f6\u00dfe
+2. Import aller DSV-Dateien + Lieferengpässe in `db/bfarm.db`
+3. Zusammenfassung mit Datenbankgröße
 
 ### Manuell (einzelne Schritte)
 
 ```bash
-# Nur Arzneimittel-DB (ohne Lieferengp\u00e4sse)
+# Nur Arzneimittel-DB (ohne Lieferengpässe)
 python src/import_bfarm.py data/20260415-REFERENCE/ --no-shortage
 
 # Nur Lieferengpass-CSV aktualisieren
@@ -306,9 +306,9 @@ python src/import_bfarm.py data/20260415-REFERENCE/
 
 ```
 data/
-\u251c\u2500\u2500 20260401-REFERENCE/         # BfArM DSV-Dateien (14-t\u00e4gig)
-\u251c\u2500\u2500 20260415-REFERENCE/         # N\u00e4chstes Update
-\u2514\u2500\u2500 lieferengpass.csv           # PharmNet.Bund Lieferengp\u00e4sse (bei jedem Update)
+\u251c\u2500\u2500 20260401-REFERENCE/         # BfArM DSV-Dateien (14-tägig)
+\u251c\u2500\u2500 20260415-REFERENCE/         # Nächstes Update
+\u2514\u2500\u2500 lieferengpass.csv           # PharmNet.Bund Lieferengpässe (bei jedem Update)
 ```
 
 ## Lokale Einrichtung
@@ -318,7 +318,7 @@ git clone https://codeberg.org/raimu/Referenzdaten_at_bfarm.de.git
 cd Referenzdaten_at_bfarm.de
 python src/import_bfarm.py data/20260401-REFERENCE/
 python3 -m http.server 8080
-# \u2192 http://localhost:8080/web/index.html
+# → http://localhost:8080/web/index.html
 ```
 
 ## Datenmodell
@@ -330,24 +330,24 @@ medicinal_product (108.055 Arzneimittel)
   \u251c\u2500\u2500 rmp_mpd_name (Bezeichnung)
   \u2514\u2500\u2500 rmp_pfm_* (Darreichungsform)
         \u2502
-        \u25bc  1:N
+        ▼  1:N
 pharmaceutical_product (111.475)
   \u251c\u2500\u2500 rpp_key (PK)
-  \u251c\u2500\u2500 rmp_key (FK \u2192 medicinal_product)
+  \u251c\u2500\u2500 rmp_key (FK → medicinal_product)
   \u2514\u2500\u2500 rpp_pfm_* (Darreichungsform Teilprodukt)
         \u2502
-        \u25bc  1:N
+        ▼  1:N
 substance (4.383 Wirkstoffe)
   \u251c\u2500\u2500 rse_key (PK)
-  \u251c\u2500\u2500 rpp_key (FK \u2192 pharmaceutical_product)
+  \u251c\u2500\u2500 rpp_key (FK → pharmaceutical_product)
   \u251c\u2500\u2500 rse_substance_name (Wirkstoffname)
   \u251c\u2500\u2500 rse_substance_id (Wirkstoff-ID, 5-stellig)
-  \u2514\u2500\u2500 rse_substance_strength (St\u00e4rke)
+  \u2514\u2500\u2500 rse_substance_strength (Stärke)
 ```
 
 ## Externe Bibliotheken (alle via CDN, lazy-loaded)
 
-| Bibliothek | Zweck | Gr\u00f6\u00dfe |
+| Bibliothek | Zweck | Größe |
 |---|---|---|
 | sql.js | SQLite im Browser (WASM) | ~1 MB |
 | Tesseract.js | OCR-Texterkennung | ~2 MB (bei Bedarf) |
@@ -363,47 +363,47 @@ substance (4.383 Wirkstoffe)
 | BfArM Technische Dokumentation | https://www.bfarm.de/SharedDocs/Downloads/DE/Arzneimittel/Zulassung/amInformationen/Referenzdatenbank/Technische-Dokumentation.pdf |
 | PharmNet.Bund Lieferengpassmeldungen (Suche) | https://anwendungen.pharmnet-bund.de/lieferengpassmeldungen/faces/public/meldungen.xhtml |
 | PharmNet.Bund Lieferengpassmeldungen (CSV-Export) | https://anwendungen.pharmnet-bund.de/lieferengpassmeldungen/public/csv |
-| PharmNet.Bund Lieferengp\u00e4sse (\u00d6ffentlichkeit) | https://www.pharmnet-bund.de/PharmNet/DE/Oeffentlichkeit/Lieferengpaesse/_node.html |
-| PharmNet.Bund Portal (\u00d6ffentlichkeit) | https://www.pharmnet-bund.de/PharmNet/DE/Oeffentlichkeit/_node.html |
+| PharmNet.Bund Lieferengpässe (Öffentlichkeit) | https://www.pharmnet-bund.de/PharmNet/DE/Oeffentlichkeit/Lieferengpaesse/_node.html |
+| PharmNet.Bund Portal (Öffentlichkeit) | https://www.pharmnet-bund.de/PharmNet/DE/Oeffentlichkeit/_node.html |
 | GKV-Krankenkassenliste | https://www.krankenkassen.de/gesetzliche-krankenkassen/krankenkassen-liste/ |
 | PKV-Versicherungsliste | https://www.krankenkassen.de/private-krankenversicherung/pkv-liste/ |
 | IK-Verzeichnis | https://www.gkv-datenaustausch.de/leistungserbringer/institutionskennzeichen/ |
 
 ## Medikamentenpass (QR-Karte)
 
-Der Medikamentenpass ist eine digitale Karte im Kreditkartenformat (85.6 \u00d7 54 mm) mit:
+Der Medikamentenpass ist eine digitale Karte im Kreditkartenformat (85.6 × 54 mm) mit:
 - Patientenname, Geburtsdatum, Versichertennummer, Krankenkasse
 - Anzahl und Liste der Medikamente
 - QR-Code mit allen Daten (kompaktes JSON)
 - TLP:AMBER+STRICT Kennzeichnung
 
 **Workflow:**
-1. Medikamente zur Liste hinzuf\u00fcgen, Formular ausf\u00fcllen
-2. "Medikamentenpass" klicken \u2192 Karte wird als Bild generiert
-3. "Als Bild speichern" \u2192 PNG auf dem Ger\u00e4t
-4. Beim n\u00e4chsten Besuch: Kamera/OCR \u2192 QR scannen \u2192 Liste wird wiederhergestellt
+1. Medikamente zur Liste hinzufügen, Formular ausfüllen
+2. "Medikamentenpass" klicken → Karte wird als Bild generiert
+3. "Als Bild speichern" → PNG auf dem Gerät
+4. Beim nächsten Besuch: Kamera/OCR → QR scannen → Liste wird wiederhergestellt
 
-Kein Server, kein Account, keine Cloud \u2014 der Patient hat die volle Kontrolle \u00fcber seine Daten.
+Kein Server, kein Account, keine Cloud — der Patient hat die volle Kontrolle über seine Daten.
 
 ## PWA-Umbau (Progressive Web App)
 
 ### Warum PWA?
-Die aktuelle Web-App l\u00f6scht alle Daten bei Tab-Close (sessionStorage). Als installierte PWA k\u00f6nnte sie:
-- Verschl\u00fcsselten Speicher dauerhaft nutzen (IndexedDB + AES-256-GCM)
+Die aktuelle Web-App löscht alle Daten bei Tab-Close (sessionStorage). Als installierte PWA könnte sie:
+- Verschlüsselten Speicher dauerhaft nutzen (IndexedDB + AES-256-GCM)
 - Offline funktionieren (Service Worker cached DB + Assets)
 - Wie eine native App installiert werden (Homescreen-Icon)
-- Push-Benachrichtigungen f\u00fcr Daten-Updates senden
+- Push-Benachrichtigungen für Daten-Updates senden
 
 ### Was ist zu tun?
 
 | Schritt | Datei | Beschreibung |
 |---------|-------|-------------|
 | 1. Manifest | `web/manifest.json` | App-Name, Icons, Theme-Color, Display: standalone |
-| 2. Service Worker | `web/sw.js` | Cache-Strategie: DB + Assets precachen, Lieferengp\u00e4sse network-first |
+| 2. Service Worker | `web/sw.js` | Cache-Strategie: DB + Assets precachen, Lieferengpässe network-first |
 | 3. Icons | `web/icons/` | 192x192 + 512x512 PNG (Maskable + Any) |
-| 4. HTTPS | Codeberg Pages | Bereits HTTPS \u2014 Voraussetzung f\u00fcr Service Worker |
+| 4. HTTPS | Codeberg Pages | Bereits HTTPS — Voraussetzung für Service Worker |
 | 5. Install-Prompt | `web/js/ui.js` | "Als App installieren" Button, `beforeinstallprompt` Event |
-| 6. Speicher-Migration | `web/js/medlist.js` | sessionStorage \u2192 IndexedDB (verschl\u00fcsselt) wenn PWA installiert |
+| 6. Speicher-Migration | `web/js/medlist.js` | sessionStorage → IndexedDB (verschlüsselt) wenn PWA installiert |
 | 7. Offline-DB | `web/sw.js` | bfarm.db im Cache Storage vorhalten (~53 MB) |
 | 8. Update-Mechanismus | `web/sw.js` | Bei neuer DB-Version: alten Cache invalidieren |
 
@@ -430,46 +430,46 @@ Die aktuelle Web-App l\u00f6scht alle Daten bei Tab-Close (sessionStorage). Als 
 ```
 Assets (JS/CSS/HTML):    Cache-First (Update im Hintergrund)
 bfarm.db:               Cache-First (14-Tage TTL, dann Network)
-Lieferengp\u00e4sse CSV:     Network-First (Fallback: letzter Cache)
+Lieferengpässe CSV:     Network-First (Fallback: letzter Cache)
 Externe CDNs:           Cache-First (versioniert)
 ```
 
 ### Sicherheit bei PWA
 
 - Favoriten/Medikamentenliste in **IndexedDB** statt sessionStorage
-- Weiterhin **AES-256-GCM** verschl\u00fcsselt (Session-Key oder Nutzer-PIN)
-- **Inaktivit\u00e4ts-Timer** bleibt aktiv (5 Min \u2192 Speicher sperren, nicht l\u00f6schen)
-- **PIN/Biometrie** zum Entsperren nach Inaktivit\u00e4t
-- "Alle Daten l\u00f6schen" Button l\u00f6scht IndexedDB + Cache + deinstalliert Service Worker
+- Weiterhin **AES-256-GCM** verschlüsselt (Session-Key oder Nutzer-PIN)
+- **Inaktivitäts-Timer** bleibt aktiv (5 Min → Speicher sperren, nicht löschen)
+- **PIN/Biometrie** zum Entsperren nach Inaktivität
+- "Alle Daten löschen" Button löscht IndexedDB + Cache + deinstalliert Service Worker
 
 ## Roadmap
 
 | Nr. | Feature | Status |
 |-----|---------|--------|
 | 1 | ~~Wechselwirkungen / Interaktionen~~ | Offen (keine freie Datenquelle, ABDA kostenpflichtig) |
-| 2 | ~~Lieferengp\u00e4sse + Generika-Vorschl\u00e4ge~~ | **Umgesetzt** \u2014 PharmNet.Bund CSV + Generika per Wirkstoff-ID |
+| 2 | ~~Lieferengpässe + Generika-Vorschläge~~ | **Umgesetzt** — PharmNet.Bund CSV + Generika per Wirkstoff-ID |
 | 3 | Beipackzettel-Links (pharmnet-bund.de) | Offen |
 | 4 | Dosierungshinweise (Morgens/Mittags/Abends pro Medikament) | Offen |
 | 5 | Medikationsplan nach BMP-Standard (Bundesmedikationsplan) | Offen |
 | 6 | Mehrsprachigkeit (EN/TR/RU/AR) | Offen |
 | 7 | Offline-Modus (Service Worker) | Offen |
-| 8 | ~~Generika-Vorschl\u00e4ge (gleicher Wirkstoff)~~ | **Umgesetzt** \u2014 Button "Generika anzeigen" pro Medikament |
+| 8 | ~~Generika-Vorschläge (gleicher Wirkstoff)~~ | **Umgesetzt** — Button "Generika anzeigen" pro Medikament |
 | 9 | Dark/Light-Mode Toggle | Offen (aktuell nur Dark) |
 | 10 | Druckansicht (Browser-Print optimiert) | Offen |
-| 11 | ~~Favoritenliste~~ | **Gel\u00f6st** via QR-Medikamentenpass (scannen bei n\u00e4chstem Besuch) |
+| 11 | ~~Favoritenliste~~ | **Gelöst** via QR-Medikamentenpass (scannen bei nächstem Besuch) |
 | 12 | PWA-Umbau (Progressive Web App) | Dokumentiert, Umsetzung offen |
 | 13 | ~~QR-Medikamentenpass (Kreditkartenformat)~~ | **Umgesetzt** |
 
 ## Credits
 
-- [BfArM](https://www.bfarm.de) f\u00fcr die offizielle Bereitstellung der Referenzdaten
-- [krankenkassen.de](https://www.krankenkassen.de) f\u00fcr GKV- und PKV-Verzeichnisse
-- Claude Code f\u00fcr Refactoring, Normalisierung, Kommentierung und Dokumentierung
-- [Nierenzentrum in Berlin](https://www.Nierenzentrum-in-Berlin.de) und Herrn Dr. Dietz f\u00fcr die Idee
+- [BfArM](https://www.bfarm.de) für die offizielle Bereitstellung der Referenzdaten
+- [krankenkassen.de](https://www.krankenkassen.de) für GKV- und PKV-Verzeichnisse
+- Claude Code für Refactoring, Normalisierung, Kommentierung und Dokumentierung
+- [Nierenzentrum in Berlin](https://www.Nierenzentrum-in-Berlin.de) und Herrn Dr. Dietz für die Idee
 
 ## Lizenz
 
 Die Daten stammen vom [BfArM](https://www.bfarm.de) und unterliegen der
-[Datenlizenz Deutschland \u2013 Namensnennung 2.0](https://www.govdata.de/dl-de/by-2-0).
+[Datenlizenz Deutschland – Namensnennung 2.0](https://www.govdata.de/dl-de/by-2-0).
 
 Dieses Repository (Skripte und Konfiguration) steht unter der MIT-Lizenz.
