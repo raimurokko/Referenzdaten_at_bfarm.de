@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Debug</title></head>
+<body style="background:#111;color:#eee;font-family:monospace;padding:20px">
+<h2>Debug: Alle Scripts laden</h2>
+<pre id="log"></pre>
+<script>
+var log = document.getElementById('log');
+function L(msg) { log.textContent += msg + '\n'; console.log(msg); }
+window.onerror = function(msg, url, line) { L('ERROR: ' + msg + ' at ' + url + ':' + line); };
+
+L('1. Starte...');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js" onerror="L('FAIL: sql-wasm.js')" onload="L('2. sql-wasm.js OK')"></script>
+<script src="js/config.js" onerror="L('FAIL: config.js')" onload="L('3. config.js OK')"></script>
+<script src="js/phonetics.js" onerror="L('FAIL: phonetics')" onload="L('4. phonetics OK')"></script>
+<script src="js/scoring.js" onerror="L('FAIL: scoring')" onload="L('5. scoring OK')"></script>
+<script src="js/db.js?v=6" onerror="L('FAIL: db.js')" onload="L('6. db.js OK')"></script>
+<script src="js/search.js?v=3" onerror="L('FAIL: search')" onload="L('7. search OK')"></script>
+<script src="js/crypto.js" onerror="L('FAIL: crypto')" onload="L('8. crypto OK')"></script>
+<script src="js/medlist.js?v=3" onerror="L('FAIL: medlist')" onload="L('9. medlist OK')"></script>
+<script src="js/insurance.js" onerror="L('FAIL: insurance')" onload="L('10. insurance OK')"></script>
+<script src="js/voice.js" onerror="L('FAIL: voice')" onload="L('11. voice OK')"></script>
+<script src="js/camera.js" onerror="L('FAIL: camera')" onload="L('12. camera OK')"></script>
+<script src="js/shortage.js?v=3" onerror="L('FAIL: shortage')" onload="L('13. shortage OK')"></script>
+<script src="js/qrcode.js" onerror="L('FAIL: qrcode')" onload="L('14. qrcode OK')"></script>
+<script src="js/stats.js" onerror="L('FAIL: stats')" onload="L('15. stats OK')"></script>
+<script src="js/ui.js?v=3" onerror="L('FAIL: ui.js')" onload="L('16. ui.js OK')"></script>
+<script>
+L('17. Alle Scripts geladen. Teste DB...');
+if (typeof BfarmDB === 'undefined') { L('FEHLER: BfarmDB nicht definiert'); }
+else {
+    L('18. BfarmDB existiert, starte init...');
+    BfarmDB.init(function(msg) { L('Progress: ' + msg); }).then(function() {
+        L('19. DB GELADEN! Ready: ' + BfarmDB.isReady());
+        var r = BfarmDB.exec("SELECT COUNT(*) FROM medicinal_product");
+        L('20. Arzneimittel: ' + r[0].values[0][0]);
+        try {
+            var r2 = BfarmDB.exec("SELECT COUNT(*) FROM lieferengpass");
+            L('21. Lieferengpaesse: ' + r2[0].values[0][0]);
+        } catch(e) { L('21. Lieferengpass-Tabelle: ' + e.message); }
+    }).catch(function(e) {
+        L('FEHLER bei DB init: ' + e.message);
+        L('Stack: ' + e.stack);
+    });
+}
+</script>
+</body></html>

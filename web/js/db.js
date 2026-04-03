@@ -11,69 +11,42 @@ var BfarmDB = (function () {
             if (!onProgress) onProgress = function () {};
 
             onProgress('Lade sql.js WASM ...');
+            var _SQL = null;
             initSqlJs({
                 locateFile: function (f) { return BFARM_CONFIG.SQLJS_CDN + '/' + f; }
             }).then(function (SQL) {
-                // Versuche zuerst gzip-Version (14 MB statt 57 MB)
+                _SQL = SQL;
                 var dbUrl = BFARM_CONFIG.DB_URL;
-                var isGzip = false;
-                var gzUrl = dbUrl + '.gz';
+                var isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
 
-                onProgress('Lade Datenbank ...');
-
-                function fetchWithProgress(url, onProg) {
-                    return fetch(url).then(function (resp) {
-                        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                        var total = parseInt(resp.headers.get('content-length') || '0');
-                        var reader = resp.body.getReader();
-                        var chunks = [], loaded = 0;
-                        function read() {
-                            return reader.read().then(function (r) {
-                                if (r.done) return;
-                                chunks.push(r.value); loaded += r.value.length;
-                                onProg(loaded, total);
-                                return read();
-                            });
-                        }
-                        return read().then(function () {
-                            var buf = new Uint8Array(loaded); var off = 0;
-                            for (var i = 0; i < chunks.length; i++) { buf.set(chunks[i], off); off += chunks[i].length; }
-                            return buf;
+                if (isLocal) {
+                    // Lokal: einfach laden
+                    onProgress('Lade Datenbank ...');
+                    return fetch(dbUrl).then(function (r) {
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.arrayBuffer();
+                    });
+                } else {
+                    // Remote: gzip versuchen, Fallback unkomprimiert
+                    var gzUrl = dbUrl + '.gz';
+                    onProgress('Lade Datenbank (komprimiert) ...');
+                    return fetch(gzUrl).then(function (r) {
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        onProgress('Entpacke ...');
+                        var ds = r.body.pipeThrough(new DecompressionStream('gzip'));
+                        return new Response(ds).arrayBuffer();
+                    }).catch(function () {
+                        onProgress('Lade Datenbank ...');
+                        return fetch(dbUrl).then(function (r) {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            return r.arrayBuffer();
                         });
                     });
                 }
-
-                function decompressGzip(buf) {
-                    if (typeof DecompressionStream === 'undefined') throw new Error('no DecompressionStream');
-                    var blob = new Blob([buf]);
-                    var ds = blob.stream().pipeThrough(new DecompressionStream('gzip'));
-                    return new Response(ds).arrayBuffer().then(function (ab) { return new Uint8Array(ab); });
-                }
-
-                function progress(loaded, total) {
-                    if (total > 0) onProgress((loaded / 1048576).toFixed(1) + ' MB (' + ((loaded / total) * 100).toFixed(0) + '%)');
-                    else onProgress((loaded / 1048576).toFixed(1) + ' MB geladen ...');
-                }
-
-                // Lokal: unkomprimiert laden (schneller). Remote: gzip versuchen, Fallback unkomprimiert
-                var isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-                var loadPromise;
-                if (isLocal) {
-                    loadPromise = fetchWithProgress(dbUrl, progress);
-                } else {
-                    loadPromise = fetchWithProgress(gzUrl, progress).then(function (buf) {
-                        onProgress('Entpacke Datenbank ...');
-                        return decompressGzip(buf);
-                    }).catch(function () {
-                        onProgress('Lade Datenbank ...');
-                        return fetchWithProgress(dbUrl, progress);
-                    });
-                }
-                return loadPromise.then(function (buf) {
-                    onProgress('Initialisiere ...');
-                    db = new SQL.Database(buf);
-                    resolve(db);
-                });
+            }).then(function (buf) {
+                onProgress('Initialisiere ...');
+                db = new _SQL.Database(new Uint8Array(buf));
+                resolve(db);
             }).catch(reject);
         });
     }

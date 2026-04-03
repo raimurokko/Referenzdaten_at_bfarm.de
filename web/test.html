@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>DB Test</title></head>
+<body>
+<h2>sql.js Test</h2>
+<div id="status">Starte...</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+var s = document.getElementById('status');
+s.textContent = '1. sql.js geladen, initialisiere WASM...';
+
+initSqlJs({
+    locateFile: function(f) { return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f; }
+}).then(function(SQL) {
+    s.textContent = '2. WASM OK. Lade DB...';
+    return fetch('/db/bfarm.db');
+}).then(function(resp) {
+    s.textContent = '3. Fetch OK (' + resp.status + '). Lese Bytes...';
+    return resp.arrayBuffer();
+}).then(function(buf) {
+    s.textContent = '4. ' + (buf.byteLength / 1048576).toFixed(1) + ' MB geladen. Erstelle DB...';
+    var SQL = window.SQL;
+    if (!SQL) {
+        // SQL ist im Closure, nochmal init
+        return initSqlJs({locateFile: function(f) { return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f; }}).then(function(SQL2) {
+            return new SQL2.Database(new Uint8Array(buf));
+        });
+    }
+    return new SQL.Database(new Uint8Array(buf));
+}).then(function(db) {
+    var r = db.exec("SELECT COUNT(*) FROM medicinal_product");
+    var cnt = r[0].values[0][0];
+    var r2 = db.exec("SELECT COUNT(*) FROM lieferengpass");
+    var le = r2[0].values[0][0];
+    s.innerHTML = '<span style="color:green">ERFOLG!</span><br>' +
+        'Arzneimittel: ' + cnt + '<br>' +
+        'Lieferengpaesse: ' + le;
+}).catch(function(e) {
+    s.innerHTML = '<span style="color:red">FEHLER: ' + e.message + '</span><pre>' + e.stack + '</pre>';
+});
+</script>
+</body>
+</html>

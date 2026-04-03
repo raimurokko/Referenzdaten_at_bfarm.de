@@ -251,7 +251,6 @@
             btn.textContent = '\u2713';
             btn.classList.add('added');
         });
-    }
 
         // Klick auf Engpass-Warnung: Generika/Alternativen anzeigen
         container.addEventListener('click', function (e) {
@@ -285,6 +284,7 @@
             }
             warn.appendChild(altDiv);
         });
+    }
 
     // ─── Data Date ──────────────────────────────────────
 
