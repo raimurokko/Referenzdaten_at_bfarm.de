@@ -26,7 +26,7 @@ https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfa
 | Datenquelle | Stand | Anzahl |
 |---|---|---|
 | BfArM Referenzdaten | 15.04.2026 | 108.328 Arzneimittel · 111.758 Pharma-Produkte · 4.393 Wirkstoffe |
-| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 aktive Meldungen |
+| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 aktive Meldungen (983 unique PZNs) |
 
 Update-Zyklus: 14 Tage (BfArM) / laufend (Lieferengpässe)
 
@@ -78,6 +78,7 @@ Update-Zyklus: 14 Tage (BfArM) / laufend (Lieferengpässe)
 ### Lieferengpass-Check & Generika-Abgleich
 
 - **Lieferengpass-Daten**: CSV von PharmNet.Bund wird beim App-Start im Hintergrund geladen
+- **Mehrfach-Meldungen**: Eine PZN kann mehrfach gemeldet sein (verschiedene Zeiträume, Gründe, Alternativpräparate oder Packungsgrößen). Die App speichert alle Meldungen pro PZN (`checkAllPZN(pzn)`); `checkPZN(pzn)` liefert die erste Meldung und annotiert bei Duplikaten ein `meldungen[]`-Array für alle Originaleinträge
 - **Automatischer Abgleich**: Jede PZN in Suchergebnissen und Medikamentenliste wird gegen aktuelle Lieferengpässe geprüft
 - **Warnung**: ⚠ Lieferengpass mit Grund, Ende-Datum und Hersteller-Alternative (wenn vorhanden)
 - **Generika-Vorschläge**: Button "Generika anzeigen" pro Medikament — sucht per Wirkstoff-ID (`rse_substance_id`) alle Arzneimittel mit identischem Wirkstoff

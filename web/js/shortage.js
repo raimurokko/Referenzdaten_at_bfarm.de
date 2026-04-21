@@ -4,14 +4,28 @@
  * Lieferengpass-Daten: In bfarm.db importiert (Tabelle: lieferengpass)
  * Quelle: PharmNet.Bund CSV (beim 14-Tage-Update importiert)
  * Generika: Gleicher Wirkstoff (rse_substance_id)
+ *
+ * Datenmodell:
+ *   _cache[pzn] = [meldung1, meldung2, ...]   // Array, da dieselbe PZN mehrfach
+ *                                                gemeldet sein kann (z.B. unter-
+ *                                                schiedliche Zeitr\u00e4ume, Gr\u00fcnde,
+ *                                                Alternativen oder Packungsgr\u00f6\u00dfen)
+ *   _entries = [meldung, ...]                  // flache Liste aller Meldungen
+ *
+ *   checkPZN(pzn)   \u2192 erste Meldung (rueckwaertskompat.), bei >1: mit .meldungen[]
+ *   checkAllPZN(pzn) \u2192 alle Meldungen fuer die PZN
+ *   getAll()        \u2192 alle Meldungen (flach)  \u2192 Shortage-Panel zeigt Duplikate
+ *   getCount()      \u2192 Gesamt-Meldungen (nicht unique-PZNs)
+ *   getUniqueCount() \u2192 Anzahl unique PZNs (zum Vergleich)
  */
 
 var BfarmShortage = (function () {
     'use strict';
 
     var _loaded = false;
-    var _cache = {}; // PZN -> shortage info
-    var _count = 0;
+    var _cache = {};      // PZN -> Array<MeldungObj>
+    var _entries = [];    // flat list aller Meldungen (in Einlese-Reihenfolge)
+    var _count = 0;       // == _entries.length
 
     // ─── Lieferengp\u00e4sse aus lokaler DB laden ────────────
 
@@ -30,7 +44,7 @@ var BfarmShortage = (function () {
                 r[0].values.forEach(function (row) {
                     var pzn = (row[0] || '').padStart(8, '0');
                     if (!pzn || pzn === '00000000') return;
-                    _cache[pzn] = {
+                    var entry = {
                         pzn: pzn,
                         name: row[1] || '',
                         beginn: row[2] || '',
@@ -46,8 +60,11 @@ var BfarmShortage = (function () {
                         form: row[12] || '',
                         klassifikation: row[13] || ''
                     };
+                    if (!_cache[pzn]) _cache[pzn] = [];
+                    _cache[pzn].push(entry);
+                    _entries.push(entry);
                 });
-                _count = Object.keys(_cache).length;
+                _count = _entries.length;
             }
         } catch (e) {
             // Tabelle existiert nicht (alte DB ohne Lieferengpass-Import)
@@ -57,10 +74,32 @@ var BfarmShortage = (function () {
         return Promise.resolve(_cache);
     }
 
+    // Interner Helper: aus Array<MeldungObj> einen rueckwaertskompatiblen
+    // Rueckgabewert bauen (erstes Element; bei >1 mit .meldungen annotiert).
+    function _firstOrMerged(arr) {
+        if (!arr || !arr.length) return null;
+        if (arr.length === 1) return arr[0];
+        // Kopie, damit Konsumenten, die Felder \u00fcberschreiben, das Cache-Array
+        // nicht mutieren. meldungen[] enth\u00e4lt alle Originaleintr\u00e4ge.
+        var first = arr[0];
+        var merged = {};
+        for (var k in first) {
+            if (Object.prototype.hasOwnProperty.call(first, k)) merged[k] = first[k];
+        }
+        merged.meldungen = arr;
+        return merged;
+    }
+
     function checkPZN(pzn) {
         if (!_loaded) return null;
         pzn = String(pzn).trim().padStart(8, '0');
-        return _cache[pzn] || null;
+        return _firstOrMerged(_cache[pzn]);
+    }
+
+    function checkAllPZN(pzn) {
+        if (!_loaded) return [];
+        pzn = String(pzn).trim().padStart(8, '0');
+        return (_cache[pzn] || []).slice();
     }
 
     function checkList(medList) {
@@ -68,16 +107,17 @@ var BfarmShortage = (function () {
         return medList.filter(function (m) {
             return m.pzn && _cache[String(m.pzn).padStart(8, '0')];
         }).map(function (m) {
-            return { med: m, shortage: _cache[String(m.pzn).padStart(8, '0')] };
+            return { med: m, shortage: _firstOrMerged(_cache[String(m.pzn).padStart(8, '0')]) };
         });
     }
 
     function isLoaded() { return _loaded; }
     function getCount() { return _count; }
+    function getUniqueCount() { return Object.keys(_cache).length; }
 
     function getAll() {
         if (!_loaded) return [];
-        return Object.values(_cache);
+        return _entries.slice();
     }
 
     // ─── Generika-Vorschl\u00e4ge ────────────────────────────
@@ -103,7 +143,7 @@ var BfarmShortage = (function () {
                 name: row[1],
                 form: row[2],
                 strength: row[3],
-                shortage: _cache[String(pzn).padStart(8, '0')] || null
+                shortage: _firstOrMerged(_cache[String(pzn).padStart(8, '0')])
             };
         });
     }
@@ -138,9 +178,11 @@ var BfarmShortage = (function () {
     return {
         loadShortages: loadShortages,
         checkPZN: checkPZN,
+        checkAllPZN: checkAllPZN,
         checkList: checkList,
         isLoaded: isLoaded,
         getCount: getCount,
+        getUniqueCount: getUniqueCount,
         getAll: getAll,
         findGenerika: findGenerika,
         countGenerika: countGenerika
