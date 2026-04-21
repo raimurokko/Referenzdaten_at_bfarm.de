@@ -21,6 +21,15 @@ https://raimu.codeberg.page/Referenzdaten_at_bfarm.de/web/
 https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfarm.de/db/bfarm.db
 ```
 
+## Aktueller Datenstand
+
+| Datenquelle | Stand | Anzahl |
+|---|---|---|
+| BfArM Referenzdaten | 15.04.2026 | 108.328 Arzneimittel · 111.758 Pharma-Produkte · 4.393 Wirkstoffe |
+| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 aktive Meldungen |
+
+Update-Zyklus: 14 Tage (BfArM) / laufend (Lieferengpässe)
+
 ## Funktionen
 
 ### Suche
@@ -57,7 +66,7 @@ https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfa
 - **Pflichtfelder**: PDF-Erstellung nur möglich wenn Name + (E-Mail oder Telefon) ausgefüllt
 - **Formular diktieren**: Komplettes Formular per Sprache ausfüllen
 - **Formular löschen**: Alle Felder auf einmal zurücksetzen
-- Jedes Feld mit Spracheingabe (\ud83c\udf99) und Löschen-Button (×)
+- Jedes Feld mit Spracheingabe (🎙) und Löschen-Button (×)
 
 ### Export
 - **PDF** (TLP:AMBER+STRICT): Schreibgeschützt, Amber-Banner, min. 12pt Schrift, QR-Code mit Klartext-Inhalt, Basisdaten auf jeder Seite, Tabellen-Header auf Folgeseiten, leere Felder als "OHNE ANGABE"
@@ -154,44 +163,44 @@ Für die Einbindung in ein Formular auf einer anderen Website:
 ## Projektstruktur
 
 ```
-\u251c\u2500\u2500 README.md
-\u251c\u2500\u2500 .gitignore
-\u251c\u2500\u2500 metadata.json              # Datasette-Konfiguration
-\u2502
-\u251c\u2500\u2500 data/                      # DSV-Quelldaten (14-tägig aktualisiert)
-\u2502   \u2514\u2500\u2500 20260401-REFERENCE/
-\u2502
-\u251c\u2500\u2500 db/                        # Generierte SQLite-Datenbank
-\u2502   \u2514\u2500\u2500 bfarm.db
-\u2502
-\u251c\u2500\u2500 docs/                      # Dokumentation
-\u2502   \u2514\u2500\u2500 BfArM-Technische-Dokumentation.pdf
-\u2502
-\u251c\u2500\u2500 src/                       # Python-Werkzeuge
-\u2502   \u251c\u2500\u2500 import_bfarm.py        # DSV + Lieferengpässe → SQLite
-\u2502   \u251c\u2500\u2500 update.sh              # Automatisiertes Update-Skript
-\u2502   \u2514\u2500\u2500 fuzzy_lookup.py        # CLI Fuzzy-Suche
-\u2502
-\u2514\u2500\u2500 web/                       # Web-Frontend (serverless)
-    \u251c\u2500\u2500 index.html
-    \u251c\u2500\u2500 api-demo.html          # Demo: API-Einbindung
-    \u251c\u2500\u2500 css/
-    \u2502   \u2514\u2500\u2500 style.css
-    \u2514\u2500\u2500 js/
-        \u251c\u2500\u2500 config.js          # DB-URL, Pfade
-        \u251c\u2500\u2500 phonetics.js       # Kölner Phonetik, Levenshtein, Trigram
-        \u251c\u2500\u2500 scoring.js         # Scoring-Engine
-        \u251c\u2500\u2500 db.js              # Datenbank-Layer + Datenstand
-        \u251c\u2500\u2500 search.js          # Multi-Token-Fuzzy-Suche
-        \u251c\u2500\u2500 crypto.js          # AES-256-GCM + ML-KEM-768
-        \u251c\u2500\u2500 medlist.js         # Medikamentenliste + PDF + QR + XML
-        \u251c\u2500\u2500 insurance.js       # GKV/PKV mit IK-Nummern
-        \u251c\u2500\u2500 qrcode.js          # QR-Code Generator
-        \u251c\u2500\u2500 voice.js           # Spracheingabe
-        \u251c\u2500\u2500 camera.js          # Kamera, OCR, Barcode
-        \u251c\u2500\u2500 stats.js           # Statistiken
-        \u251c\u2500\u2500 ui.js              # UI, Diktiermodus, App-Start
-        \u2514\u2500\u2500 bfarm-api.js       # Standalone-API
+├── README.md
+├── .gitignore
+├── metadata.json              # Datasette-Konfiguration
+│
+├── data/                      # DSV-Quelldaten (14-tägig aktualisiert)
+│   └── 20260415-REFERENCE/
+│
+├── db/                        # Generierte SQLite-Datenbank
+│   └── bfarm.db
+│
+├── docs/                      # Dokumentation
+│   └── BfArM-Technische-Dokumentation.pdf
+│
+├── src/                       # Python-Werkzeuge
+│   ├── import_bfarm.py        # DSV + Lieferengpässe → SQLite
+│   ├── update.sh              # Automatisiertes Update-Skript
+│   └── fuzzy_lookup.py        # CLI Fuzzy-Suche
+│
+└── web/                       # Web-Frontend (serverless)
+    ├── index.html
+    ├── api-demo.html          # Demo: API-Einbindung
+    ├── css/
+    │   └── style.css
+    └── js/
+        ├── config.js          # DB-URL, Pfade
+        ├── phonetics.js       # Kölner Phonetik, Levenshtein, Trigram
+        ├── scoring.js         # Scoring-Engine
+        ├── db.js              # Datenbank-Layer + Datenstand
+        ├── search.js          # Multi-Token-Fuzzy-Suche
+        ├── crypto.js          # AES-256-GCM + ML-KEM-768
+        ├── medlist.js         # Medikamentenliste + PDF + QR + XML
+        ├── insurance.js       # GKV/PKV mit IK-Nummern
+        ├── qrcode.js          # QR-Code Generator
+        ├── voice.js           # Spracheingabe
+        ├── camera.js          # Kamera, OCR, Barcode
+        ├── stats.js           # Statistiken
+        ├── ui.js              # UI, Diktiermodus, App-Start
+        └── bfarm-api.js       # Standalone-API
 
 ```
 
@@ -311,9 +320,9 @@ python src/import_bfarm.py data/20260415-REFERENCE/
 
 ```
 data/
-\u251c\u2500\u2500 20260401-REFERENCE/         # BfArM DSV-Dateien (14-tägig)
-\u251c\u2500\u2500 20260415-REFERENCE/         # Nächstes Update
-\u2514\u2500\u2500 lieferengpass.csv           # PharmNet.Bund Lieferengpässe (bei jedem Update)
+├── 20260401-REFERENCE/         # BfArM DSV-Dateien (ältere Version)
+├── 20260415-REFERENCE/         # BfArM DSV-Dateien (aktuell, 14-tägig)
+└── lieferengpass.csv           # PharmNet.Bund Lieferengpässe (bei jedem Update aktualisiert)
 ```
 
 ## Lokale Einrichtung
@@ -321,7 +330,7 @@ data/
 ```bash
 git clone https://codeberg.org/raimu/Referenzdaten_at_bfarm.de.git
 cd Referenzdaten_at_bfarm.de
-python src/import_bfarm.py data/20260401-REFERENCE/
+python src/import_bfarm.py data/20260415-REFERENCE/
 python3 -m http.server 8080
 # → http://localhost:8080/web/index.html
 ```
@@ -329,25 +338,25 @@ python3 -m http.server 8080
 ## Datenmodell
 
 ```
-medicinal_product (108.055 Arzneimittel)
-  \u251c\u2500\u2500 rmp_key (PK)
-  \u251c\u2500\u2500 rmp_pzn (Pharmazentralnummer)
-  \u251c\u2500\u2500 rmp_mpd_name (Bezeichnung)
-  \u2514\u2500\u2500 rmp_pfm_* (Darreichungsform)
-        \u2502
+medicinal_product (108.328 Arzneimittel)
+  ├── rmp_key (PK)
+  ├── rmp_pzn (Pharmazentralnummer)
+  ├── rmp_mpd_name (Bezeichnung)
+  └── rmp_pfm_* (Darreichungsform)
+        │
         ▼  1:N
-pharmaceutical_product (111.475)
-  \u251c\u2500\u2500 rpp_key (PK)
-  \u251c\u2500\u2500 rmp_key (FK → medicinal_product)
-  \u2514\u2500\u2500 rpp_pfm_* (Darreichungsform Teilprodukt)
-        \u2502
+pharmaceutical_product (111.758)
+  ├── rpp_key (PK)
+  ├── rmp_key (FK → medicinal_product)
+  └── rpp_pfm_* (Darreichungsform Teilprodukt)
+        │
         ▼  1:N
-substance (4.383 Wirkstoffe)
-  \u251c\u2500\u2500 rse_key (PK)
-  \u251c\u2500\u2500 rpp_key (FK → pharmaceutical_product)
-  \u251c\u2500\u2500 rse_substance_name (Wirkstoffname)
-  \u251c\u2500\u2500 rse_substance_id (Wirkstoff-ID, 5-stellig)
-  \u2514\u2500\u2500 rse_substance_strength (Stärke)
+substance (4.393 Wirkstoffe)
+  ├── rse_key (PK)
+  ├── rpp_key (FK → pharmaceutical_product)
+  ├── rse_substance_name (Wirkstoffname)
+  ├── rse_substance_id (Wirkstoff-ID, 5-stellig)
+  └── rse_substance_strength (Stärke)
 ```
 
 ## Externe Bibliotheken (alle via CDN, lazy-loaded)
