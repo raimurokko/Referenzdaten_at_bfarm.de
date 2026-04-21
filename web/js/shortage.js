@@ -5,27 +5,32 @@
  * Quelle: PharmNet.Bund CSV (beim 14-Tage-Update importiert)
  * Generika: Gleicher Wirkstoff (rse_substance_id)
  *
- * Datenmodell:
- *   _cache[pzn] = [meldung1, meldung2, ...]   // Array, da dieselbe PZN mehrfach
- *                                                gemeldet sein kann (z.B. unter-
- *                                                schiedliche Zeitr\u00e4ume, Gr\u00fcnde,
- *                                                Alternativen oder Packungsgr\u00f6\u00dfen)
- *   _entries = [meldung, ...]                  // flache Liste aller Meldungen
+ * Datenmodell (nach Analyse der Diskrepanz 1002/995/983):
+ *   _entries = [meldung, ...]                  // ALLE Meldungen (inkl. ohne PZN,
+ *                                                 z.B. Importe, Klinikpackungen,
+ *                                                 Rezeptursubstanzen)
+ *   _cache[pzn] = [meldung1, meldung2, ...]   // Nur Meldungen MIT echter PZN;
+ *                                                Array, weil dieselbe PZN mehrfach
+ *                                                gemeldet sein kann (unterschied-
+ *                                                liche Zeitr\u00e4ume, Gr\u00fcnde, etc.)
  *
- *   checkPZN(pzn)   \u2192 erste Meldung (rueckwaertskompat.), bei >1: mit .meldungen[]
- *   checkAllPZN(pzn) \u2192 alle Meldungen fuer die PZN
- *   getAll()        \u2192 alle Meldungen (flach)  \u2192 Shortage-Panel zeigt Duplikate
- *   getCount()      \u2192 Gesamt-Meldungen (nicht unique-PZNs)
- *   getUniqueCount() \u2192 Anzahl unique PZNs (zum Vergleich)
+ *   checkPZN(pzn)      \u2192 erste Meldung (rueckwaertskompat.), bei >1 mit .meldungen[]
+ *   checkAllPZN(pzn)   \u2192 alle Meldungen fuer die PZN
+ *   getAll()           \u2192 alle Meldungen (flach) \u2192 Shortage-Panel zeigt alle 1002
+ *   getCount()         \u2192 Gesamt-Meldungen (z.B. 1002)
+ *   getIndexedCount()  \u2192 Meldungen mit echter PZN (z.B. 995)
+ *   getUniqueCount()   \u2192 Anzahl unique PZNs (z.B. 983)
  */
 
 var BfarmShortage = (function () {
     'use strict';
 
     var _loaded = false;
-    var _cache = {};      // PZN -> Array<MeldungObj>
-    var _entries = [];    // flat list aller Meldungen (in Einlese-Reihenfolge)
-    var _count = 0;       // == _entries.length
+    var _cache = {};      // PZN -> Array<MeldungObj>  (nur Meldungen mit echter PZN)
+    var _entries = [];    // flat list ALLER Meldungen (inkl. Meldungen ohne PZN,
+                          //   z.B. Importe, Klinikpackungen, Rezeptursubstanzen)
+    var _count = 0;       // == _entries.length  (Gesamt-Meldungen)
+    var _indexedCount = 0; // Meldungen mit echter PZN (fuer PZN-Lookup)
 
     // ─── Lieferengp\u00e4sse aus lokaler DB laden ────────────
 
@@ -42,10 +47,11 @@ var BfarmShortage = (function () {
             );
             if (r.length && r[0].values.length) {
                 r[0].values.forEach(function (row) {
-                    var pzn = (row[0] || '').padStart(8, '0');
-                    if (!pzn || pzn === '00000000') return;
+                    var rawPzn = (row[0] || '').padStart(8, '0');
+                    var hasPzn = !!(rawPzn && rawPzn !== '00000000');
                     var entry = {
-                        pzn: pzn,
+                        pzn: hasPzn ? rawPzn : '',   // '' statt '00000000' fuer UI
+                        hasPzn: hasPzn,
                         name: row[1] || '',
                         beginn: row[2] || '',
                         ende: row[3] || '',
@@ -60,9 +66,14 @@ var BfarmShortage = (function () {
                         form: row[12] || '',
                         klassifikation: row[13] || ''
                     };
-                    if (!_cache[pzn]) _cache[pzn] = [];
-                    _cache[pzn].push(entry);
+                    // ALLE Meldungen in die flache Liste (inkl. PZN-lose)
                     _entries.push(entry);
+                    // Nur Meldungen mit echter PZN in den Lookup-Cache
+                    if (hasPzn) {
+                        if (!_cache[rawPzn]) _cache[rawPzn] = [];
+                        _cache[rawPzn].push(entry);
+                        _indexedCount++;
+                    }
                 });
                 _count = _entries.length;
             }
@@ -112,8 +123,9 @@ var BfarmShortage = (function () {
     }
 
     function isLoaded() { return _loaded; }
-    function getCount() { return _count; }
-    function getUniqueCount() { return Object.keys(_cache).length; }
+    function getCount() { return _count; }                   // alle Meldungen (inkl. PZN-lose)
+    function getIndexedCount() { return _indexedCount; }     // Meldungen mit echter PZN
+    function getUniqueCount() { return Object.keys(_cache).length; }  // unique PZNs
 
     function getAll() {
         if (!_loaded) return [];
@@ -182,6 +194,7 @@ var BfarmShortage = (function () {
         checkList: checkList,
         isLoaded: isLoaded,
         getCount: getCount,
+        getIndexedCount: getIndexedCount,
         getUniqueCount: getUniqueCount,
         getAll: getAll,
         findGenerika: findGenerika,

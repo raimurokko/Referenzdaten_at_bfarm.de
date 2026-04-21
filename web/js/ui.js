@@ -364,10 +364,18 @@
                 else if (s.klassifikation.indexOf('verskri') >= 0) klassBadge = '<span class="shortage-badge">VERSCHREIBUNGSPFLICHTIG</span>';
                 else if (s.klassifikation === 'versrel') klassBadge = '<span class="tag tag-phonetisch">APOTHEKENPFLICHTIG</span>';
             }
-            html += '<div class="result-card shortage-card shortage-expandable" data-pzn="' + h(s.pzn) + '" data-wirkstoffe="' + h(s.wirkstoffe) + '">' +
+            var pznBadge = s.pzn
+                ? '<span class="pzn-badge">PZN ' + h(s.pzn) + '</span>'
+                : '<span class="pzn-badge" style="background:#888">ohne PZN</span>';
+            var expandableCls = s.pzn ? ' shortage-expandable' : '';
+            var clickHint = s.pzn
+                ? '<div class="shortage-click-hint" style="margin-top:6px">\u25b6 Alternativen anzeigen</div>' +
+                  '<div class="shortage-alt-container" style="display:none"></div>'
+                : '';
+            html += '<div class="result-card shortage-card' + expandableCls + '" data-pzn="' + h(s.pzn) + '" data-wirkstoffe="' + h(s.wirkstoffe) + '">' +
                 '<div class="result-name">' + h(s.name) + '</div>' +
                 '<div class="result-meta">' +
-                '<span class="pzn-badge">PZN ' + h(s.pzn) + '</span>' +
+                pznBadge +
                 (s.atc ? '<span class="pzn-badge">ATC ' + h(s.atc) + '</span>' : '') +
                 (s.form ? '<span class="form-badge">' + h(s.form) + '</span>' : '') +
                 kkhBadge + klassBadge +
@@ -379,8 +387,7 @@
                 (s.alternativ ? '<div><strong>Alternative:</strong> ' + h(s.alternativ) + '</div>' : '') +
                 '<div><strong>Hersteller:</strong> ' + h(s.zulassungsinhaber || 'k.A.') + '</div>' +
                 '</div>' +
-                '<div class="shortage-click-hint" style="margin-top:6px">\u25b6 Alternativen anzeigen</div>' +
-                '<div class="shortage-alt-container" style="display:none"></div>' +
+                clickHint +
                 '</div>';
         });
         el.innerHTML = html;
@@ -2097,6 +2104,8 @@
             if (typeof BfarmShortage !== 'undefined') {
                 BfarmShortage.loadShortages().then(function () {
                     var cnt = BfarmShortage.getCount();
+                    var indexed = BfarmShortage.getIndexedCount();
+                    var unique = BfarmShortage.getUniqueCount();
                     var info = document.getElementById('dataDateInfo');
                     if (info) {
                         if (cnt > 0) {
@@ -2106,8 +2115,11 @@
                                 var dr = BfarmDB.exec("SELECT datum_letzte_meldung FROM lieferengpass ORDER BY substr(datum_letzte_meldung,7,4)||substr(datum_letzte_meldung,4,2)||substr(datum_letzte_meldung,1,2) DESC LIMIT 1");
                                 if (dr.length && dr[0].values.length) datumStand = dr[0].values[0][0] || '';
                             } catch (e) {}
-                            info.textContent += ' \u00b7 Lieferengp\u00e4sse: ' + cnt +
-                                (datumStand ? ' (Stand: ' + datumStand + ', PharmNet.Bund)' : ' (PharmNet.Bund)');
+                            var breakdown = (indexed < cnt)
+                                ? ' (' + indexed + ' mit PZN \u00b7 ' + unique + ' unique)'
+                                : '';
+                            info.textContent += ' \u00b7 Lieferengp\u00e4sse: ' + cnt + breakdown +
+                                (datumStand ? ' \u00b7 Stand: ' + datumStand + ', PharmNet.Bund' : ' \u00b7 PharmNet.Bund');
                         } else {
                             info.textContent += ' \u00b7 Lieferengp\u00e4sse: keine Daten in DB';
                         }

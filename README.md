@@ -26,7 +26,7 @@ https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfa
 | Datenquelle | Stand | Anzahl |
 |---|---|---|
 | BfArM Referenzdaten | 15.04.2026 | 108.328 Arzneimittel · 111.758 Pharma-Produkte · 4.393 Wirkstoffe |
-| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 aktive Meldungen (983 unique PZNs) |
+| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 Meldungen · 995 mit PZN · 983 unique PZNs |
 
 Update-Zyklus: 14 Tage (BfArM) / laufend (Lieferengpässe)
 
