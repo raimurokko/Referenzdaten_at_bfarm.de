@@ -165,6 +165,7 @@ Für die Einbindung in ein Formular auf einer anderen Website:
 ```
 ├── README.md
 ├── .gitignore
+├── .env.example               # Vorlage für Update-Skript-Konfiguration
 ├── metadata.json              # Datasette-Konfiguration
 │
 ├── data/                      # DSV-Quelldaten (14-tägig aktualisiert)
@@ -178,7 +179,8 @@ Für die Einbindung in ein Formular auf einer anderen Website:
 │
 ├── src/                       # Python-Werkzeuge
 │   ├── import_bfarm.py        # DSV + Lieferengpässe → SQLite
-│   ├── update.sh              # Automatisiertes Update-Skript
+│   ├── update_data.py         # Automatisiertes 14-Tage-Update (Python)
+│   ├── update.sh              # Bash-Wrapper für update_data.py
 │   └── fuzzy_lookup.py        # CLI Fuzzy-Suche
 │
 └── web/                       # Web-Frontend (serverless)
@@ -284,36 +286,84 @@ Namespace: `urn:bfarm-referenzdaten:medliste:v1`
 
 ## Update-Workflow (alle 14 Tage)
 
-### Automatisiert (empfohlen)
+### Vollautomatisiert (empfohlen)
+
+Das Skript `src/update_data.py` automatisiert den kompletten Update-Prozess.
+Konfiguration erfolgt über `.env` (Vorlage: `.env.example`).
 
 ```bash
-# 1. Neue DSV-Dateien vom BfArM herunterladen
-mkdir -p data/20260415-REFERENCE
-# DSV-Dateien in data/20260415-REFERENCE/ ablegen
+# 1. Neue DSV-Dateien vom BfArM im Unter-Verzeichnis ablegen
+mkdir -p data/20260429-REFERENCE
+# DSV-Dateien hier ablegen (MEDICINAL_PRODUCT / PHARMACEUTICAL_PRODUCT / SUBSTANCE)
 
-# 2. Komplettes Update (Arzneimittel-DB + Lieferengpässe)
-./src/update.sh data/20260415-REFERENCE/
-
-# 3. Commit & Push
-git add db/bfarm.db data/lieferengpass.csv data/20260415-REFERENCE/
-git commit -m "Datenupdate 2026-04-15"
-git push
+# 2. Update-Skript ausführen (Auto-Detect des neuesten Verzeichnisses)
+./src/update.sh
+# oder explizit:
+./src/update.sh --dsv data/20260429-REFERENCE/
 ```
 
-Das Update-Skript (`src/update.sh`) führt automatisch aus:
-1. Download der aktuellen Lieferengpass-CSV von PharmNet.Bund
-2. Import aller DSV-Dateien + Lieferengpässe in `db/bfarm.db`
-3. Zusammenfassung mit Datenbankgröße
+Das Skript führt automatisch aus:
+
+1. **DSV-Verzeichnis erkennen** — neuestes `*-REFERENCE/` in `data/` (konfigurierbar)
+2. **Lieferengpass-CSV** von PharmNet.Bund herunterladen → `data/lieferengpass.csv`
+3. **Datenbank** neu generieren via `import_bfarm.py` → `db/bfarm.db`
+4. **WAL-Modus** bereinigen (`PRAGMA journal_mode=DELETE; VACUUM`)
+5. **gzip-Version** erstellen → `db/bfarm.db.gz`
+6. **README.md** aktualisieren (Datenstand-Tabelle, Datenmodell-Zahlen, Beispielpfade)
+7. **Git-Diff** anzeigen + Bestätigung einholen
+8. **Commit + Parallel-Push** auf GitHub + Codeberg (via Remote `all`)
+
+### Kommandozeilen-Optionen
+
+```bash
+./src/update.sh                               # Auto-Detect, mit Bestätigung
+./src/update.sh --dsv data/20260429-REFERENCE/ # Verzeichnis explizit
+./src/update.sh --dry-run                     # Nur anzeigen, nichts ändern
+./src/update.sh --no-confirm                  # Vollautomatisch (z.B. für Cron)
+./src/update.sh --skip-csv                    # CSV nicht neu laden
+./src/update.sh --skip-push                   # Nur committen, nicht pushen
+```
+
+### Konfiguration (.env)
+
+```env
+# Pfade
+DB_PATH=db/bfarm.db
+DB_GZ_PATH=db/bfarm.db.gz
+DATA_DIR=data
+CSV_PATH=data/lieferengpass.csv
+IMPORT_SCRIPT=src/import_bfarm.py
+README_PATH=README.md
+
+# URLs
+LIEFERENGPASS_CSV_URL=https://anwendungen.pharmnet-bund.de/lieferengpassmeldungen/public/csv
+
+# Git
+GIT_REMOTE=all      # Parallel-Push auf GitHub + Codeberg
+GIT_BRANCH=main
+
+# DSV-Verzeichnis-Pattern für Auto-Detect
+DSV_PATTERN=*-REFERENCE
+```
+
+### Setup für Parallel-Push (einmalig)
+
+```bash
+# Remote "all" einrichten (pusht parallel auf GitHub + Codeberg)
+git remote add all git@github.com:USER/REPO.git
+git remote set-url --add --push all git@github.com:USER/REPO.git
+git remote set-url --add --push all https://codeberg.org/USER/REPO.git
+```
 
 ### Manuell (einzelne Schritte)
 
 ```bash
-# Nur Arzneimittel-DB (ohne Lieferengpässe)
-python src/import_bfarm.py data/20260415-REFERENCE/ --no-shortage
+# Nur Arzneimittel-DB (ohne Lieferengpass-CSV-Download)
+python3 src/import_bfarm.py data/20260429-REFERENCE/ --no-shortage
 
 # Nur Lieferengpass-CSV aktualisieren
 curl -o data/lieferengpass.csv "https://anwendungen.pharmnet-bund.de/lieferengpassmeldungen/public/csv"
-python src/import_bfarm.py data/20260415-REFERENCE/
+python3 src/import_bfarm.py data/20260429-REFERENCE/
 ```
 
 ### Datenverzeichnisse
