@@ -270,7 +270,7 @@ Namespace: `urn:bfarm-referenzdaten:medliste:v1`
       <Darreichungsform>Retardtablette</Darreichungsform>
     </Medikament>
   </Arzneimittel>
-  <Lieferengpaesse quelle="PharmNet.Bund" stand="2026-04-03T14:23:00Z" anzahl="847"/>
+  <Lieferengpaesse quelle="PharmNet.Bund" stand="2026-04-30" anzahl="1018"/>
   <TLP klassifizierung="AMBER+STRICT">Nur für Fachpersonal.</TLP>
 </MedikamentenListe>
 ```
@@ -372,6 +372,7 @@ python3 src/import_bfarm.py data/20260429-REFERENCE/
 ```
 data/
 ├── 20260401-REFERENCE/         # BfArM DSV-Dateien (ältere Version)
+├── 20260415-REFERENCE/         # BfArM DSV-Dateien (ältere Version)
 ├── 20260501-REFERENCE/         # BfArM DSV-Dateien (aktuell, 14-tägig)
 └── lieferengpass.csv           # PharmNet.Bund Lieferengpässe (bei jedem Update aktualisiert)
 ```

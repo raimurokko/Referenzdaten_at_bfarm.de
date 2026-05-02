@@ -201,6 +201,20 @@ def update_readme(readme_path, old_stats, new_stats, new_dsv_dir):
         f'substance ({wirk} Wirkstoffe)', content
     )
 
+    # XML-Beispiel: <Lieferengpaesse … stand="…" anzahl="…"/>
+    # le_stand ist im DD.MM.YYYY-Format -> in YYYY-MM-DD umwandeln fuer ISO-XML-Stil
+    le_iso = ''
+    if le_date and re.match(r'^\d{2}\.\d{2}\.\d{4}$', le_date):
+        d, m, y = le_date.split('.')
+        le_iso = f'{y}-{m}-{d}'
+    if le_iso:
+        le_plain = str(new_stats['lieferengpass'])  # ohne Tausenderpunkt fuer XML-Attribut
+        content = re.sub(
+            r'(<Lieferengpaesse quelle="PharmNet\.Bund" stand=")[^"]+(" anzahl=")\d+("/>)',
+            rf'\g<1>{le_iso}\g<2>{le_plain}\g<3>',
+            content
+        )
+
     # Beispielpfade: alte DSV-Verzeichnisnamen durch neuen ersetzen
     new_dir_name = os.path.basename(new_dsv_dir.rstrip('/'))
     if old_stats.get('data_date'):
