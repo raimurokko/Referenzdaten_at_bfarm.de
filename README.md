@@ -25,8 +25,8 @@ https://lite.datasette.io/?url=https://raimurokko.github.io/Referenzdaten_at_bfa
 
 | Datenquelle | Stand | Anzahl |
 |---|---|---|
-| BfArM Referenzdaten | 15.04.2026 | 108.328 Arzneimittel · 111.758 Pharma-Produkte · 4.393 Wirkstoffe |
-| PharmNet.Bund Lieferengpässe | 21.04.2026 | 1.002 Meldungen · 995 mit PZN · 983 unique PZNs |
+| BfArM Referenzdaten | 01.05.2026 | 108.461 Arzneimittel · 111.886 Pharma-Produkte · 4.395 Wirkstoffe |
+| PharmNet.Bund Lieferengpässe | 30.04.2026 | 1.018 Meldungen · 1.011 mit PZN · 1.000 unique PZNs |
 
 Update-Zyklus: 14 Tage (BfArM) / laufend (Lieferengpässe)
 
@@ -170,7 +170,7 @@ Für die Einbindung in ein Formular auf einer anderen Website:
 ├── metadata.json              # Datasette-Konfiguration
 │
 ├── data/                      # DSV-Quelldaten (14-tägig aktualisiert)
-│   └── 20260415-REFERENCE/
+│   └── 20260501-REFERENCE/
 │
 ├── db/                        # Generierte SQLite-Datenbank
 │   └── bfarm.db
@@ -372,7 +372,7 @@ python3 src/import_bfarm.py data/20260429-REFERENCE/
 ```
 data/
 ├── 20260401-REFERENCE/         # BfArM DSV-Dateien (ältere Version)
-├── 20260415-REFERENCE/         # BfArM DSV-Dateien (aktuell, 14-tägig)
+├── 20260501-REFERENCE/         # BfArM DSV-Dateien (aktuell, 14-tägig)
 └── lieferengpass.csv           # PharmNet.Bund Lieferengpässe (bei jedem Update aktualisiert)
 ```
 
@@ -381,7 +381,7 @@ data/
 ```bash
 git clone https://codeberg.org/raimu/Referenzdaten_at_bfarm.de.git
 cd Referenzdaten_at_bfarm.de
-python src/import_bfarm.py data/20260415-REFERENCE/
+python src/import_bfarm.py data/20260501-REFERENCE/
 python3 -m http.server 8080
 # → http://localhost:8080/web/index.html
 ```
@@ -389,20 +389,20 @@ python3 -m http.server 8080
 ## Datenmodell
 
 ```
-medicinal_product (108.328 Arzneimittel)
+medicinal_product (108.461 Arzneimittel)
   ├── rmp_key (PK)
   ├── rmp_pzn (Pharmazentralnummer)
   ├── rmp_mpd_name (Bezeichnung)
   └── rmp_pfm_* (Darreichungsform)
         │
         ▼  1:N
-pharmaceutical_product (111.758)
+pharmaceutical_product (111.886)
   ├── rpp_key (PK)
   ├── rmp_key (FK → medicinal_product)
   └── rpp_pfm_* (Darreichungsform Teilprodukt)
         │
         ▼  1:N
-substance (4.393 Wirkstoffe)
+substance (4.395 Wirkstoffe)
   ├── rse_key (PK)
   ├── rpp_key (FK → pharmaceutical_product)
   ├── rse_substance_name (Wirkstoffname)

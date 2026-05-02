@@ -92,6 +92,14 @@ def get_db_stats(db_path):
             'pharma': q('SELECT COUNT(*) FROM pharmaceutical_product'),
             'wirkstoffe': q('SELECT COUNT(DISTINCT rse_substance_name) FROM substance'),
             'lieferengpass': q('SELECT COUNT(*) FROM lieferengpass'),
+            'le_indexed': q(
+                "SELECT COUNT(*) FROM lieferengpass "
+                "WHERE pzn IS NOT NULL AND pzn != '' AND pzn != '00000000'"
+            ),
+            'le_unique': q(
+                "SELECT COUNT(DISTINCT pzn) FROM lieferengpass "
+                "WHERE pzn IS NOT NULL AND pzn != '' AND pzn != '00000000'"
+            ),
             'data_date': q("SELECT value FROM _import_meta WHERE key='data_date'", ''),
             'le_stand': q(
                 "SELECT datum_letzte_meldung FROM lieferengpass "
@@ -162,6 +170,8 @@ def update_readme(readme_path, old_stats, new_stats, new_dsv_dir):
     pharma = de(new_stats['pharma'])
     wirk = de(new_stats['wirkstoffe'])
     le = de(new_stats['lieferengpass'])
+    le_idx = de(new_stats.get('le_indexed', 0))
+    le_uniq = de(new_stats.get('le_unique', 0))
 
     # Datenstand-Tabelle: BfArM Zeile
     content = re.sub(
@@ -170,9 +180,11 @@ def update_readme(readme_path, old_stats, new_stats, new_dsv_dir):
         content
     )
     # Datenstand-Tabelle: Lieferengpaesse Zeile
+    # Akzeptiert beide Formate (alt: "X aktive Meldungen", neu: "X Meldungen · Y mit PZN · Z unique PZNs")
+    new_le_cell = f'{le} Meldungen · {le_idx} mit PZN · {le_uniq} unique PZNs'
     content = re.sub(
-        r'(\| PharmNet\.Bund Lieferengpässe \| )\d{2}\.\d{2}\.\d{4}( \| )[\d.]+ aktive Meldungen( \|)',
-        rf'\g<1>{le_date}\g<2>{le} aktive Meldungen\g<3>',
+        r'(\| PharmNet\.Bund Lieferengpässe \| )\d{2}\.\d{2}\.\d{4}( \| )[^|]+?( \|)',
+        rf'\g<1>{le_date}\g<2>{new_le_cell}\g<3>',
         content
     )
     # Datenmodell-Box
@@ -219,7 +231,8 @@ def build_commit_message(old, new):
         f"  - {de(new['pharma'])} Pharma-Produkte ({delta(new['pharma'], old.get('pharma', 0))})",
         f"  - {de(new['wirkstoffe'])} Wirkstoffe ({delta(new['wirkstoffe'], old.get('wirkstoffe', 0))})",
         f"- Lieferengpässe (Stand: {new['le_stand']})",
-        f"  - {de(new['lieferengpass'])} aktive Meldungen ({delta(new['lieferengpass'], old.get('lieferengpass', 0))})",
+        f"  - {de(new['lieferengpass'])} Meldungen ({delta(new['lieferengpass'], old.get('lieferengpass', 0))})",
+        f"  - davon {de(new.get('le_indexed', 0))} mit PZN · {de(new.get('le_unique', 0))} unique PZNs",
         "",
         "Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>",
     ]
@@ -377,7 +390,8 @@ def main():
         print(f"  Arzneimittel:    {de(new_stats['arzneimittel'])} ({delta(new_stats['arzneimittel'], old_stats.get('arzneimittel', 0))})")
         print(f"  Pharma-Produkte: {de(new_stats['pharma'])} ({delta(new_stats['pharma'], old_stats.get('pharma', 0))})")
         print(f"  Wirkstoffe:      {de(new_stats['wirkstoffe'])} ({delta(new_stats['wirkstoffe'], old_stats.get('wirkstoffe', 0))})")
-        print(f"  Lieferengpaesse: {de(new_stats['lieferengpass'])} ({delta(new_stats['lieferengpass'], old_stats.get('lieferengpass', 0))})")
+        print(f"  Lieferengpaesse: {de(new_stats['lieferengpass'])} ({delta(new_stats['lieferengpass'], old_stats.get('lieferengpass', 0))})"
+              f"  [{de(new_stats.get('le_indexed', 0))} mit PZN, {de(new_stats.get('le_unique', 0))} unique]")
         print(f"  LE-Stand:        {new_stats['le_stand']}")
 
 
